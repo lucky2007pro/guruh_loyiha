@@ -1,10 +1,91 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
 
-</body>
-</html>
+{% block title %}Profilni tahrirlash{% endblock %}
+
+{% block extra_css %}
+<style>
+    .update-card {
+        max-width: 650px;
+        margin: 4rem auto;
+        padding: 3rem;
+        background-color: #fff;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+    }
+    
+    .update-title {
+        color: var(--gray-900);
+        margin-bottom: 2.5rem;
+        font-size: 2rem;
+        font-weight: 800;
+        border-bottom: 1px solid var(--gray-200);
+        padding-bottom: 1rem;
+    }
+    
+    .update-btn {
+        padding: 0.9rem 2.5rem;
+        background: linear-gradient(135deg, var(--secondary), #059669);
+        border: none;
+        border-radius: var(--radius-md);
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    }
+    
+    .update-btn:hover {
+        background: linear-gradient(135deg, var(--secondary-hover), var(--secondary));
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+    }
+    
+    .cancel-btn {
+        padding: 0.9rem 2rem;
+        background-color: white;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        color: var(--gray-600);
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-right: 1rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .cancel-btn:hover {
+        background-color: var(--gray-50);
+        color: var(--gray-900);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="update-card">
+    <h2 class="update-title">Profilni tahrirlash</h2>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        
+        <div class="form-actions">
+            <a href="{% url 'users:profile' request.user.username %}" class="cancel-btn">Bekor qilish</a>
+            <button type="submit" class="update-btn">Saqlash</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

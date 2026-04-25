@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Yangi mahsulot qo'shish{% endblock %}
+{% block title %}Mahsulotni tahrirlash{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -26,7 +26,7 @@
     
     .submit-btn {
         padding: 0.9rem 2.5rem;
-        background: linear-gradient(135deg, var(--primary), #6366F1);
+        background: linear-gradient(135deg, var(--secondary), #059669);
         border: none;
         border-radius: var(--radius-md);
         color: white;
@@ -34,13 +34,13 @@
         font-weight: 700;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
     }
     
     .submit-btn:hover {
-        background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+        background: linear-gradient(135deg, var(--secondary-hover), var(--secondary));
         transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
     }
     
     .cancel-btn {
@@ -76,14 +76,14 @@
 
 {% block content %}
 <div class="form-card">
-    <h2 class="form-title">Yangi mahsulot qo'shish</h2>
+    <h2 class="form-title">Tahrirlamoqda: {{ pr.title }}</h2>
     
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}
         
         <div class="form-actions">
-            <a href="/" class="cancel-btn">Bekor qilish</a>
+            <a href="{% url 'products:detail' pr.id %}" class="cancel-btn">Bekor qilish</a>
             <button type="submit" class="submit-btn">Saqlash</button>
         </div>
     </form>

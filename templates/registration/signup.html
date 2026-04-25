@@ -1,10 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
 
-</body>
-</html>
+{% block title %}Ro'yxatdan o'tish{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        max-width: 480px;
+        margin: 5rem auto;
+        padding: 3rem;
+        background-color: #fff;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+    }
+    
+    .auth-title {
+        text-align: center;
+        color: var(--gray-900);
+        margin-bottom: 2.5rem;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+    
+    .auth-btn {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--secondary), #059669);
+        border: none;
+        border-radius: var(--radius-md);
+        color: white;
+        font-size: 1.15rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    }
+    
+    .auth-btn:hover {
+        background: linear-gradient(135deg, var(--secondary-hover), var(--secondary));
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+    }
+    
+    .auth-footer {
+        text-align: center;
+        margin-top: 2rem;
+        color: var(--gray-500);
+        font-weight: 500;
+    }
+    
+    .auth-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 700;
+        transition: color 0.2s;
+    }
+    
+    .auth-footer a:hover {
+        color: var(--primary-hover);
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2 class="auth-title">Ro'yxatdan o'tish</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="auth-btn">Jo'natish</button>
+    </form>
+    
+    <div class="auth-footer">
+        Akkountingiz bormi? <a href="{% url 'login' %}">Kirish</a>
+    </div>
+</div>
+{% endblock %}

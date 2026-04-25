@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}O'chirishni tasdiqlang{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-card {
+        max-width: 500px;
+        margin: 4rem auto;
+        padding: 2.5rem;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .delete-icon {
+        font-size: 4rem;
+        color: #e74c3c;
+        margin-bottom: 1rem;
+    }
+    
+    .delete-title {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .delete-text {
+        color: #7f8c8d;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+    
+    .delete-btn {
+        padding: 0.8rem 2rem;
+        background-color: #e74c3c;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .delete-btn:hover {
+        background-color: #c0392b;
+    }
+    
+    .cancel-btn {
+        padding: 0.8rem 2rem;
+        background-color: #95a5a6;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 1rem;
+    }
+    
+    .cancel-btn:hover {
+        background-color: #7f8c8d;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-card">
+    <div class="delete-icon">⚠️</div>
+    <h2 class="delete-title">Diqqat!</h2>
+    <p class="delete-text">
+        Rostdan ham <strong>"{{ pr.title }}"</strong> nomli mahsulotni o'chirmoqchimisiz? Bu amalni orqaga qaytarib bo'lmaydi.
+    </p>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-actions">
+            <a href="{% url 'products:detail' pr.id %}" class="cancel-btn">Bekor qilish</a>
+            <button type="submit" class="delete-btn">Ha, o'chirish</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,127 +1,204 @@
 {% extends "base.html" %}
 
-{% block title %}Bosh sahifa - Onlayn Magazin{% endblock %}
+{% block title %}Bosh sahifa - JobEasy Mall{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary) 0%, rgba(139, 92, 246, 0.8) 100%), url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+        background-blend-mode: multiply;
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 6rem 2rem;
+        border-radius: var(--radius-xl);
+        margin-bottom: 4rem;
+        text-align: center;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        letter-spacing: -1px;
+        line-height: 1.1;
+        text-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        margin-bottom: 2.5rem;
+        font-weight: 400;
+        opacity: 0.9;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .hero-btn {
+        display: inline-flex;
+        align-items: center;
+        background-color: white;
+        color: var(--primary);
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-decoration: none;
+        border-radius: 9999px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+        gap: 0.5rem;
+    }
+
+    .hero-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+        background-color: var(--gray-50);
+    }
+
+    .categories-area {
+        margin-bottom: 4rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin-bottom: 2rem;
+        display: inline-block;
+        position: relative;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), #8B5CF6);
+        border-radius: 2px;
+    }
+
+    .categories-list {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        list-style: none;
+    }
+
+    .category-pill {
+        padding: 0.75rem 1.5rem;
+        background: white;
+        color: var(--gray-700);
+        text-decoration: none;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border: 1px solid var(--gray-200);
+        transition: all 0.2s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .category-pill:hover, 
+    .category-pill.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background-color: white;
+        border-radius: var(--radius-xl);
+        border: 1px dashed var(--gray-300);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--gray-300);
+        margin-bottom: 1rem;
+    }
+
+    .empty-text {
+        font-size: 1.25rem;
+        color: var(--gray-500);
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
     <!-- HERO SECTION -->
-    <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 3rem 2rem; border-radius: 8px; margin-bottom: 3rem; text-align: center;">
-        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Xush kelibsiz! 👋</h1>
-        <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">Eng sifatli mahsulotlar uchun eng yaxshi narxlar</p>
-        <a href="/products/" style="display: inline-block; background-color: white; color: #3498db; padding: 0.8rem 2rem; text-decoration: none; border-radius: 4px; font-weight: bold; transition: all 0.3s;">Xaridor qil →</a>
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Eng Sifatli Mahsulotlar,<br>Arzon Narxlarda</h1>
+            <p class="hero-subtitle">JobEasy Mall orqali minglab turdagi mahsulotlarni oson va qulay narxlarda uydan chiqmagan holda toping.</p>
+            <a href="{% url 'main:index' %}" class="hero-btn">
+                Hoziroq xarid qilish 
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+        </div>
     </div>
 
     <!-- CATEGORIES -->
-    <div class="categories-menu">
-        <h3>Kategoriyalar</h3>
-        <ul class="categories-list">
-            <li><a href="/products/?category=all">Barcha mahsulotlar</a></li>
+    <div class="categories-area">
+        <h2 class="section-title">Ommabop Kategoriyalar</h2>
+        <ul class="categories-list" style="margin-top: 1rem;">
+            <li><a href="{% url 'main:index' %}?category=all" class="category-pill">Barcha mahsulotlar</a></li>
             {% for category in categories %}
-                <li><a href="/products/?category={{ category.id }}">{{ category.name }}</a></li>
+                <li><a href="{% url 'main:index' %}?category={{ category.id }}" class="category-pill">{{ category.name }}</a></li>
             {% endfor %}
         </ul>
     </div>
 
-    <!-- FEATURED PRODUCTS -->
-    <h2 style="margin-bottom: 2rem; color: #2c3e50; font-size: 1.8rem;">⭐ Tavsiyalangan Mahsulotlar</h2>
+    <!-- PRODUCTS -->
+    <h2 class="section-title" style="margin-bottom: 2rem;">Barcha Mahsulotlar</h2>
     
-    {% if featured_products %}
+    {% if products %}
         <div class="products-grid">
-            {% for product in featured_products %}
+            {% for product in products %}
                 <div class="product-card">
                     <div class="product-image">
-                        {% if product.image %}
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% if product.productimage_set.first %}
+                            <img src="{{ product.productimage_set.first.image.url }}" alt="{{ product.title }}">
                         {% else %}
-                            <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
-                        {% endif %}
-                        {% if product.discount %}
-                            <div class="product-badge">-{{ product.discount }}%</div>
+                            <span style="color: var(--gray-300); font-size: 3rem;">📦</span>
                         {% endif %}
                     </div>
 
                     <div class="product-info">
-                        <a href="/product/{{ product.id }}/" class="product-name">{{ product.name }}</a>
+                        <a href="{% url 'products:detail' product.id %}" class="product-name" title="{{ product.title }}">{{ product.title|truncatechars:45 }}</a>
                         <div class="product-category">{{ product.category.name }}</div>
                         <div class="product-price">{{ product.price }} so'm</div>
-                        <div class="product-rating">⭐ {{ product.rating|default:"4.5" }}/5</div>
                         
-                        <div class="product-actions">
-                            <a href="/product/{{ product.id }}/" class="btn btn-primary">Ko'rish</a>
-                            <button class="btn btn-save" onclick="toggleSaved({{ product.id }})">❤️</button>
+                        <div class="product-actions" style="margin-top: 1rem;">
+                            <a href="{% url 'products:detail' product.id %}" class="btn btn-primary" style="flex:1;">Ko'rish</a>
+                            <a href="{% url 'users:addremovesaved' product.id %}" class="btn btn-save" title="Saqlash">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            </a>
                         </div>
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <div style="text-align: center; padding: 3rem; background-color: #f8f9fa; border-radius: 8px;">
-            <p style="font-size: 1.1rem; color: #7f8c8d;">Hozir mahsulotlar mavjud emas</p>
+        <div class="empty-state">
+            <div class="empty-icon">🛒</div>
+            <p class="empty-text">Hozirda tanlangan turkuma ko'ra mahsulot topilmadi</p>
         </div>
     {% endif %}
 
-    <!-- RECENT PRODUCTS -->
-    <h2 style="margin-top: 3rem; margin-bottom: 2rem; color: #2c3e50; font-size: 1.8rem;">🆕 Yangi Mahsulotlar</h2>
-    
-    {% if recent_products %}
-        <div class="products-grid">
-            {% for product in recent_products %}
-                <div class="product-card">
-                    <div class="product-image">
-                        {% if product.image %}
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                        {% else %}
-                            <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="product-info">
-                        <a href="/product/{{ product.id }}/" class="product-name">{{ product.name }}</a>
-                        <div class="product-category">{{ product.category.name }}</div>
-                        <div class="product-price">{{ product.price }} so'm</div>
-                        <div class="product-rating">⭐ {{ product.rating|default:"4.5" }}/5</div>
-                        
-                        <div class="product-actions">
-                            <a href="/product/{{ product.id }}/" class="btn btn-primary">Ko'rish</a>
-                            <button class="btn btn-save" onclick="toggleSaved({{ product.id }})">❤️</button>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <script>
-        function toggleSaved(productId) {
-            fetch(`/api/product/${productId}/save/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.saved) {
-                    event.target.classList.add('saved');
-                } else {
-                    event.target.classList.remove('saved');
-                }
-            });
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-    </script>
 {% endblock %}

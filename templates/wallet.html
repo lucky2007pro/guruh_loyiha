@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}💳 Hamyonim{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wallet-container {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    @media (max-width: 900px) {
+        .wallet-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    .wallet-card {
+        background-color: #fff;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+        padding: 2.5rem;
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+    .wallet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--gray-200);
+        padding-bottom: 1rem;
+    }
+    .wallet-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .balance-display {
+        background: linear-gradient(135deg, var(--primary), #8B5CF6);
+        padding: 2.5rem;
+        border-radius: var(--radius-lg);
+        color: white;
+        text-align: center;
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+        margin-bottom: 2rem;
+    }
+    .balance-label {
+        font-size: 1.2rem;
+        font-weight: 500;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+    }
+    .balance-amount {
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+    
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .credit-card {
+        background: linear-gradient(135deg, #1f2937, #374151);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+    }
+    .credit-card::after {
+        content: '';
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 100px;
+        height: 100px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+    .card-number {
+        font-size: 1.2rem;
+        font-family: monospace;
+        letter-spacing: 2px;
+        margin-bottom: 1rem;
+    }
+    .card-details {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--gray-700);
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.9rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        background-color: var(--gray-50);
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        background-color: #fff;
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+    }
+    .btn {
+        width: 100%;
+        padding: 0.9rem;
+        border: none;
+        border-radius: var(--radius-md);
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    .btn-deposit { background: linear-gradient(135deg, #10B981, #059669); }
+    .btn-deposit:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
+    
+    .btn-withdraw { background: linear-gradient(135deg, #EF4444, #DC2626); }
+    .btn-withdraw:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(239,68,68,0.3); }
+
+    .btn-primary-gradient { background: linear-gradient(135deg, var(--primary), #6366F1); }
+    .btn-primary-gradient:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(79,70,229,0.3); }
+
+    .action-box {
+        background-color: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wallet-container">
+    <div class="left-panel">
+        <div class="wallet-card">
+            <div class="wallet-header">
+                <h2 class="wallet-title">💳 Mening Hamyonim</h2>
+            </div>
+            
+            <div class="balance-display">
+                <div class="balance-label">Joriy balans</div>
+                <div class="balance-amount">{{ wallet.balance }} so'm</div>
+            </div>
+
+            <h3 class="section-title">Hamyon operatsiyalari</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <!-- Deposit Form -->
+                <div class="action-box">
+                    <h4 style="margin-bottom: 1rem; color: #059669; font-weight: 700;">Pul tushirish</h4>
+                    <form method="POST" action="{% url 'users:deposit' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Karta tanlang</label>
+                            <select name="card_id" class="form-control" required>
+                                {% for card in cards %}
+                                <option value="{{ card.id }}">{{ card.card_number|slice:"0:4" }} **** **** {{ card.card_number|slice:"-4:" }}</option>
+                                {% empty %}
+                                <option value="" disabled selected>Karta qo'shilmagan</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Summ (so'm)</label>
+                            <input type="number" name="amount" class="form-control" min="1000" placeholder="0.00" required>
+                        </div>
+                        <button type="submit" class="btn btn-deposit" {% if not cards %}disabled{% endif %}>To'ldirish</button>
+                    </form>
+                </div>
+
+                <!-- Withdraw Form -->
+                <div class="action-box">
+                    <h4 style="margin-bottom: 1rem; color: #DC2626; font-weight: 700;">Pul yechish</h4>
+                    <form method="POST" action="{% url 'users:withdraw' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Karta tanlang</label>
+                            <select name="card_id" class="form-control" required>
+                                {% for card in cards %}
+                                <option value="{{ card.id }}">{{ card.card_number|slice:"0:4" }} **** **** {{ card.card_number|slice:"-4:" }}</option>
+                                {% empty %}
+                                <option value="" disabled selected>Karta qo'shilmagan</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Summ (so'm)</label>
+                            <input type="number" name="amount" class="form-control" min="1000" placeholder="0.00" required>
+                        </div>
+                        <button type="submit" class="btn btn-withdraw" {% if not cards %}disabled{% endif %}>Yechib olish</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="wallet-card" style="padding: 1.5rem;">
+            <h3 class="section-title">Mening Kartalarim</h3>
+            
+            {% if cards %}
+            <div class="card-list" style="margin-bottom: 2rem;">
+                {% for card in cards %}
+                <div class="credit-card">
+                    <div style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 0.5rem;">KARTA RAQAMI</div>
+                    <div class="card-number">**** **** **** {{ card.card_number|slice:"-4:" }}</div>
+                    <div class="card-details">
+                        <span>{{ card.owner_name|upper }}</span>
+                        <span>{{ card.expiry_date }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 2rem 0; color: var(--gray-500);">
+                Mavjud kartalar yo'q. Ehtiyojingizni qondirish uchun yangi karta qo'shing.
+            </div>
+            {% endif %}
+
+            <div style="border-top: 1px dashed var(--gray-300); padding-top: 1.5rem;">
+                <h4 style="margin-bottom: 1rem; color: var(--gray-800); font-weight: 700;">Yangi karta qo'shish</h4>
+                <form method="POST" action="{% url 'users:add_card' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Karta raqami</label>
+                        <input type="text" name="card_number" class="form-control" placeholder="8600 0000 0000 0000" maxlength="19" required>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Amal qilish (Oy/Yil)</label>
+                            <input type="text" name="expiry_date" class="form-control" placeholder="12/25" maxlength="5" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Ism Familiya (Kartadagi)</label>
+                        <input type="text" name="owner_name" class="form-control" placeholder="JOHN DOE" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary-gradient">Karta qo'shish</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

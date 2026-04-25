@@ -11,25 +11,31 @@ class CustomUser(AbstractUser):
         return self.username
 
 
-class Comment(models.Model):
-    product = models.ForeignKey(
-        "products.Product",
-        on_delete=models.CASCADE,
-        related_name='comments'
-    )
-    author = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name='my_comments'
-    )
-    body = models.TextField(verbose_name="Kommentariya matni")
-
-    created_at = models.DateTimeField(auto_now_add=True)
+class Saved(models.Model):
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='saved_by')
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='saved_products')
 
     class Meta:
-        verbose_name = "Kommentariya"
-        verbose_name_plural = "Kommentariyalar"
-        ordering = ['-created_at']
+        unique_together = ('product', 'author')
 
     def __str__(self):
-        return f"{self.author.username} ning kommenti: {self.body[:20]}..."
+        return f"{self.author.username} saved {self.product.title}"
+
+
+class Wallet(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='wallet')
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return f"{self.user.username}'s Wallet - {self.balance} sum"
+
+
+class Card(models.Model):
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='cards')
+    card_number = models.CharField(max_length=16)
+    expiry_date = models.CharField(max_length=5)
+    owner_name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f"Card {self.card_number[:4]}**** for {self.wallet.user.username}"
+

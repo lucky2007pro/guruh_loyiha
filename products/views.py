@@ -1,8 +1,9 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product, Category, ProductImage, Comment
+from .models import Product, Category, ProductImage, Comment, Cart, CartItem
 from .forms import ProductForm, NewProductForm
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 
 
@@ -12,7 +13,7 @@ from django.contrib import messages
 def new_product(request):
     if request.method == 'GET':
         form = NewProductForm()
-        return render(request, 'products/new_product.html', {'form': form})
+        return render(request, 'new_product.html', {'form': form})
 
     elif request.method == 'POST':
         form = NewProductForm(request.POST, request.FILES)
@@ -31,7 +32,7 @@ def new_product(request):
             messages.success(request, 'Mahsulot muvaffaqiyatli yaratildi!')
             return redirect('main:index')
 
-        return render(request, 'products/new_product.html', {'form': form})
+        return render(request, 'new_product.html', {'form': form})
 
 
 def product_detail(request, id):
@@ -45,7 +46,7 @@ def product_detail(request, id):
     else:
         request.session["recently_viewed"] = [product.id]
 
-    return render(request, 'products/product_detail.html', {'product': product})
+    return render(request, 'products_detail.html', {'product': product})
 
 
 @login_required(login_url='login')
@@ -117,3 +118,73 @@ def delete_comment(request, comment_id):
         return redirect('products:detail', id=product_id)
 
     return redirect('products:detail', id=product_id)
+
+
+@login_required(login_url='login')
+def add_to_cart(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            quantity = data.get('quantity', 1)
+            product = get_object_or_404(Product, id=product_id)
+            cart, created = Cart.objects.get_or_create(user=request.user)
+            cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product)
+            if not item_created:
+                cart_item.quantity += quantity
+                cart_item.save()
+            else:
+                cart_item.quantity = quantity
+                cart_item.save()
+            return JsonResponse({'success': True, 'msg': "Savatchaga qo'shildi"})
+        except Exception as e:
+            return JsonResponse({'success': False, 'msg': str(e)}, status=400)
+    return JsonResponse({'success': False}, status=405)
+
+
+@login_required(login_url='login')
+def cart_detail(request):
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    items = cart.items.all()
+    total_price = sum(item.product.price * item.quantity for item in items if item.product)
+    return render(request, 'cart.html', {'cart': cart, 'items': items, 'total_price': total_price})
+
+
+@login_required(login_url='login')
+def checkout(request):
+    cart = getattr(request.user, 'cart', None)
+    if not cart or not cart.items.exists():
+        messages.error(request, "Savatingiz bo'sh")
+        return redirect('main:index')
+        
+    if request.method == 'POST':
+        address = request.POST.get('shipping_address')
+        phone = request.POST.get('phone_number')
+        customer_name = request.POST.get('customer_name')
+        
+        items = cart.items.all()
+        total_price = sum(item.product.price * item.quantity for item in items if item.product)
+        
+        order = Order.objects.create(
+            user=request.user,
+            customer_name=customer_name,
+            total_price=total_price,
+            shipping_address=address,
+            phone_number=phone
+        )
+        
+        for item in items:
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                price=item.product.price,
+                quantity=item.quantity
+            )
+            
+        cart.items.all().delete()
+        messages.success(request, "Buyurtmangiz qabul qilindi!")
+        return redirect('main:index')
+        
+    items = cart.items.all()
+    total_price = sum(item.product.price * item.quantity for item in items if item.product)
+    return render(request, 'checkout.html', {'items': items, 'total_price': total_price})

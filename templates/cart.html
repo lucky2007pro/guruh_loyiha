@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Savat{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cart-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .cart-items {
+        background-color: #fff;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        padding: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+    
+    .cart-header {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        padding-bottom: 1rem;
+    }
+    
+    .cart-item {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+    }
+    
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-image {
+        width: 120px;
+        height: 120px;
+        border-radius: var(--radius-md);
+        object-fit: cover;
+        background-color: var(--gray-50);
+        margin-right: 1.5rem;
+        border: 1px solid var(--gray-200);
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+        text-decoration: none;
+        display: inline-block;
+        transition: color 0.2s ease;
+    }
+    .item-title:hover {
+        color: var(--primary);
+    }
+    
+    .item-price {
+        font-size: 1.2rem;
+        color: var(--gray-900);
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .item-qty {
+        font-size: 0.95rem;
+        color: var(--gray-500);
+        font-weight: 500;
+    }
+    
+    .cart-summary {
+        background-color: #fff;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        padding: 2rem;
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+        border: 1px solid var(--gray-200);
+    }
+    
+    .summary-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        padding-bottom: 1rem;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        font-size: 1.05rem;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+    
+    .summary-total {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        border-top: 1px solid var(--gray-200);
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .checkout-btn {
+        display: block;
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--primary), #6366F1);
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        border-radius: var(--radius-md);
+        margin-top: 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+    }
+    
+    .checkout-btn:hover {
+        background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+    }
+    
+    .empty-cart {
+        text-align: center;
+        padding: 5rem 2rem;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--gray-300);
+        margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 992px) {
+        .cart-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+    <div class="cart-items">
+        <h2 class="cart-header">Savatim</h2>
+        
+        {% if items %}
+            {% for item in items %}
+            <div class="cart-item">
+                {% if item.product.productimage_set.first %}
+                    <img src="{{ item.product.productimage_set.first.image.url }}" alt="{{ item.product.title }}" class="item-image">
+                {% else %}
+                    <div class="item-image" style="display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #bdc3c7;">🛒</div>
+                {% endif %}
+                
+                <div class="item-details">
+                    <a href="{% url 'products:detail' item.product.id %}" class="item-title">{{ item.product.title }}</a>
+                    <div class="item-price">{{ item.product.price }} so'm</div>
+                    <div class="item-qty">Soni: {{ item.quantity }} dona</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-cart">
+                <div class="empty-icon">🛒</div>
+                <h3>Savatingiz hozircha bo'sh</h3>
+                <p style="color: #7f8c8d; margin-top: 1rem;">Xarid qilish uchun mahsulotlar sahifasiga o'ting.</p>
+                <a href="{% url 'main:index' %}" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-block;">Mahsulotlarni ko'rish</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if items %}
+    <div class="cart-summary">
+        <h3 class="summary-title">Buyurtma xulosasi</h3>
+        <div class="summary-row">
+            <span>Mahsulotlar ({{ items|length }}):</span>
+            <span>{{ total_price }} so'm</span>
+        </div>
+        <div class="summary-row">
+            <span>Yetkazib berish:</span>
+            <span>Bepul</span>
+        </div>
+        
+        <div class="summary-row summary-total">
+            <span>Jami summa:</span>
+            <span>{{ total_price }} so'm</span>
+        </div>
+        
+        <a href="{% url 'products:checkout' %}" class="checkout-btn">Buyurtma rasmiylashtirish</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

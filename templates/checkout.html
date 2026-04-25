@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Buyurtma rasmiylashtirish{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-container {
+        display: grid;
+        grid-template-columns: 1fr 450px;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .checkout-form-area {
+        background-color: #fff;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        padding: 2.5rem;
+        border: 1px solid var(--gray-200);
+    }
+    
+    .checkout-title {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--gray-200);
+        padding-bottom: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        font-size: 0.95rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: var(--gray-50);
+        color: var(--gray-900);
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary);
+        outline: none;
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+    
+    .submit-btn {
+        width: 100%;
+        padding: 1.2rem;
+        background: linear-gradient(135deg, var(--primary), #6366F1);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+    }
+    
+    .submit-btn:hover {
+        background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+    }
+    
+    .order-summary {
+        background-color: #fff;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        padding: 2.5rem;
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+        border: 1px solid var(--gray-200);
+    }
+    
+    .summary-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        padding-bottom: 1rem;
+    }
+    
+    .summary-items {
+        max-height: 400px;
+        overflow-y: auto;
+        margin-bottom: 1.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px dashed var(--gray-200);
+    }
+    
+    .item-info {
+        flex: 1;
+        padding-right: 1rem;
+    }
+    
+    .item-name {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .item-qty {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        font-weight: 500;
+    }
+    
+    .item-price {
+        font-weight: 700;
+        color: var(--gray-900);
+        font-size: 1rem;
+    }
+    
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        border-top: 1px solid var(--gray-200);
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    @media (max-width: 992px) {
+        .checkout-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-form-area">
+        <h2 class="checkout-title">Yetkazib berish ma'lumotlari</h2>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Mijoz ismi *</label>
+                <input type="text" name="customer_name" value="{{ request.user.first_name }} {{ request.user.last_name }}" class="form-control" placeholder="Ism familiyangizni kiriting" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Telefon raqam *</label>
+                <input type="text" name="phone_number" class="form-control" placeholder="+998 90 123 45 67" value="{{ request.user.phone_number|default:'' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Yetkazib berish manzili *</label>
+                <textarea name="shipping_address" class="form-control" rows="4" placeholder="Shahar, tuman, ko'cha, uy raqami va mo'ljalni kiriting..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Qo'shimcha izoh (ixtiyoriy)</label>
+                <textarea name="notes" class="form-control" rows="2" placeholder="Kuryer uchun maxsus ko'rsatmalar..."></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn">Buyurtmani tasdiqlash va yuborish</button>
+        </form>
+    </div>
+    
+    <div class="order-summary">
+        <h3 class="summary-title">Buyurtmangiz</h3>
+        
+        <div class="summary-items">
+            {% for item in items %}
+            <div class="summary-item">
+                <div class="item-info">
+                    <div class="item-name">{{ item.product.title }}</div>
+                    <div class="item-qty">{{ item.quantity }} x {{ item.product.price }} so'm</div>
+                </div>
+                <div class="item-price">
+                    {% widthratio item.product.price 1 item.quantity %} so'm
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="total-row">
+            <span>Jami to'lov:</span>
+            <span>{{ total_price }} so'm</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

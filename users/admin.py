@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import CustomUser, Comment
+from .models import CustomUser, Wallet, Card
 from django.contrib.auth.models import Group
-# Register your models here.
 
 admin.site.unregister(Group)
 admin.site.register(CustomUser)
-admin.site.register(Comment)
+admin.site.register(Wallet)
+admin.site.register(Card)

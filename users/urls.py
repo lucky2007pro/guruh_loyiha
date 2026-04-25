@@ -1,4 +1,4 @@
-from .views import SignUpView, ProfileView, UpdateProfileView, AddRemoveSavedView, SavedView, RecentlyViewedView
+from .views import SignUpView, ProfileView, UpdateProfileView, AddRemoveSavedView, SavedView, RecentlyViewedView, WalletView, AddCardView, DepositView, WithdrawView
 from django.urls import path
 
 app_name='users'
@@ -8,5 +8,9 @@ urlpatterns = [
     path('update', UpdateProfileView.as_view(), name='update'),
     path('addremovesaved/<int:product_id>', AddRemoveSavedView.as_view(), name='addremovesaved'),
     path('saveds', SavedView.as_view(), name='saveds'),
-    path('recently-viewed', RecentlyViewedView.as_view(), name='recently_viewed')
+    path('recently-viewed', RecentlyViewedView.as_view(), name='recently_viewed'),
+    path('wallet/', WalletView.as_view(), name='wallet'),
+    path('wallet/add-card/', AddCardView.as_view(), name='add_card'),
+    path('wallet/deposit/', DepositView.as_view(), name='deposit'),
+    path('wallet/withdraw/', WithdrawView.as_view(), name='withdraw'),
 ]

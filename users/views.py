@@ -70,7 +70,7 @@ class SavedView(LoginRequiredMixin, View):
         if q:
             products = Product.objects.filter(title__icontains=q)
             saveds = Saved.objects.filter(author=request.user, product__in=products)
-        return render(request, 'saveds.html', {"saveds": saveds})
+        return render(request, 'saved_products.html', {"saveds": saveds})
 
 
 class RecentlyViewedView(View):
@@ -83,4 +83,72 @@ class RecentlyViewedView(View):
             q = request.GET.get('q', '')
             if q:
                 products = products.filter(title__icontains=q)
-        return render(request, "recently_viewed.html", {'products': products})
+        return render(request, "viewed_products.html", {'products': products})
+
+
+from django.db.models import F
+from .models import Wallet, Card
+from decimal import Decimal
+
+class WalletView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    def get(self, request):
+        wallet, created = Wallet.objects.get_or_create(user=request.user)
+        cards = wallet.cards.all()
+        return render(request, 'wallet.html', {'wallet': wallet, 'cards': cards})
+
+class AddCardView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    def post(self, request):
+        wallet, created = Wallet.objects.get_or_create(user=request.user)
+        card_number = request.POST.get('card_number')
+        expiry_date = request.POST.get('expiry_date')
+        owner_name = request.POST.get('owner_name')
+        if card_number and expiry_date and owner_name:
+            Card.objects.create(wallet=wallet, card_number=card_number, expiry_date=expiry_date, owner_name=owner_name)
+            messages.success(request, 'Karta muvaffaqiyatli qo\'shildi')
+        else:
+            messages.error(request, 'Barcha maydonlarni to\'ldiring')
+        return redirect('users:wallet')
+
+class DepositView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    def post(self, request):
+        wallet, created = Wallet.objects.get_or_create(user=request.user)
+        amount = request.POST.get('amount')
+        card_id = request.POST.get('card_id')
+        if amount and card_id:
+            try:
+                amt = Decimal(amount)
+                if amt > 0:
+                    wallet.balance = F('balance') + amt
+                    wallet.save()
+                    wallet.refresh_from_db()
+                    messages.success(request, f"Hamyoningizga {amt} so'm tushirildi.")
+                else:
+                    messages.error(request, "Ijobiy qiymat kiriting.")
+            except:
+                messages.error(request, "Xato summa kiritildi.")
+        return redirect('users:wallet')
+
+class WithdrawView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    def post(self, request):
+        wallet, created = Wallet.objects.get_or_create(user=request.user)
+        amount = request.POST.get('amount')
+        card_id = request.POST.get('card_id')
+        if amount and card_id:
+            try:
+                amt = Decimal(amount)
+                if amt > 0 and wallet.balance >= amt:
+                    wallet.balance = F('balance') - amt
+                    wallet.save()
+                    wallet.refresh_from_db()
+                    messages.success(request, f"Hamyoningizdan {amt} so'm yecholib, kartaga o'tkazildi.")
+                elif wallet.balance < amt:
+                    messages.error(request, "Hamyonda yetarli mablag' yo'q.")
+                else:
+                    messages.error(request, "Ijobiy qiymat kiriting.")
+            except:
+                messages.error(request, "Xato summa kiritildi.")
+        return redirect('users:wallet')

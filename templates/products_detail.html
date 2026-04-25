@@ -4,11 +4,11 @@
 
 {% block content %}
     <!-- BREADCRUMB -->
-    <div style="margin-bottom: 2rem; font-size: 0.9rem;">
-        <a href="/" style="color: #3498db; text-decoration: none;">Bosh sahifa</a> /
-        <a href="/products/" style="color: #3498db; text-decoration: none;">Mahsulotlar</a> /
-        <a href="/products/?category={{ product.category.id }}" style="color: #3498db; text-decoration: none;">{{ product.category.name }}</a> /
-        <span style="color: #555;">{{ product.name }}</span>
+    <div style="margin-bottom: 2rem; font-size: 0.95rem; font-weight: 500;">
+        <a href="/" style="color: var(--primary); text-decoration: none;">Bosh sahifa</a> <span style="color: var(--gray-400); margin: 0 0.5rem;">/</span>
+        <a href="/products/" style="color: var(--primary); text-decoration: none;">Katalog</a> <span style="color: var(--gray-400); margin: 0 0.5rem;">/</span>
+        <a href="/products/?category={{ product.category.id }}" style="color: var(--primary); text-decoration: none;">{{ product.category.name }}</a> <span style="color: var(--gray-400); margin: 0 0.5rem;">/</span>
+        <span style="color: var(--gray-500);">{{ product.title }}</span>
     </div>
 
     <!-- PRODUCT DETAIL -->
@@ -18,96 +18,69 @@
             <!-- LEFT: IMAGE -->
             <div>
                 <div class="detail-image">
-                    {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImage">
+                    {% if product.productimage_set.first %}
+                        <img src="{{ product.productimage_set.first.image.url }}" alt="{{ product.title }}" id="mainImage">
                     {% else %}
-                        <span style="color: #bdc3c7; font-size: 5rem;">📦</span>
+                        <span style="color: var(--gray-300); font-size: 5rem;">📦</span>
                     {% endif %}
                 </div>
             </div>
 
             <!-- RIGHT: INFO -->
-            <div>
-                <h1>{{ product.name }}</h1>
+            <div class="detail-info">
+                <h1>{{ product.title }}</h1>
                 
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                    <div class="product-rating">⭐ {{ product.rating|default:"4.5" }}/5</div>
-                    <span style="color: #7f8c8d;">({{ product.reviews_count|default:"0" }} sharh)</span>
-                    {% if product.in_stock %}
-                        <span style="color: #27ae60; font-weight: bold;">✓ Mavjud</span>
-                    {% else %}
-                        <span style="color: #e74c3c; font-weight: bold;">✗ Mavjud emas</span>
-                    {% endif %}
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="color: #F59E0B; font-weight: 600; background: #FEF3C7; padding: 0.2rem 0.6rem; border-radius: var(--radius-md);">⭐ 4.8</div>
+                    <span style="color: var(--gray-500);">(12+ sharh)</span>
+                    <span style="color: var(--secondary); font-weight: 700; background: #D1FAE5; padding: 0.2rem 0.6rem; border-radius: var(--radius-md);">✓ Sotuvda mavjud</span>
                 </div>
 
                 <div class="detail-price">{{ product.price }} so'm</div>
 
-                {% if product.original_price and product.original_price > product.price %}
-                    <div style="margin-bottom: 1rem;">
-                        <span style="text-decoration: line-through; color: #95a5a6;">{{ product.original_price }} so'm</span>
-                        <span style="color: #e74c3c; font-weight: bold; margin-left: 1rem;">Chegirma: {{ discount_percent }}%</span>
-                    </div>
-                {% endif %}
-
                 <div class="detail-description">
-                    <h3>Tavsif</h3>
+                    <h3 style="color: var(--gray-900); margin-bottom: 1rem; font-size: 1.3rem;">Tavsif</h3>
                     <p>{{ product.description }}</p>
                 </div>
 
-                <!-- SPECIFICATIONS -->
-                {% if product.specifications %}
-                    <div class="detail-specs">
-                        <h3>Xususiyatlari</h3>
-                        <div class="spec-row">
-                            <div class="spec-label">Brand</div>
-                            <div class="spec-value">{{ product.brand|default:"Noma'lum" }}</div>
-                        </div>
-                        <div class="spec-row">
-                            <div class="spec-label">Model</div>
-                            <div class="spec-value">{{ product.model|default:"Noma'lum" }}</div>
-                        </div>
-                        <div class="spec-row">
-                            <div class="spec-label">Rang</div>
-                            <div class="spec-value">{{ product.color|default:"Noma'lum" }}</div>
-                        </div>
-                    </div>
-                {% endif %}
-
                 <!-- ACTIONS -->
-                <div class="detail-actions">
-                    {% if product.in_stock %}
-                        <button class="btn btn-primary" style="flex: 2;" onclick="addToCart({{ product.id }})">🛒 Savatchaga qo'sh</button>
-                    {% else %}
-                        <button class="btn btn-primary" style="flex: 2; opacity: 0.5; cursor: not-allowed;" disabled>Mavjud emas</button>
-                    {% endif %}
-                    <button class="btn btn-save" onclick="toggleSaved(event, {{ product.id }})">❤️ Saqlash</button>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button class="btn btn-primary" style="flex: 2; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);" onclick="addToCart({{ product.id }})">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Savatchaga qo'shish
+                    </button>
+                    <button class="btn btn-save" style="padding: 1rem 1.5rem; border-radius: var(--radius-lg);" onclick="toggleSaved(event, {{ product.id }})">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                    </button>
                 </div>
 
                 <!-- DELIVERY INFO -->
-                <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 4px; margin-top: 1.5rem;">
-                    <h3 style="margin-bottom: 1rem;">📦 Yetkazib berish</h3>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem;">
+                <div style="background-color: var(--gray-50); padding: 1.5rem; border-radius: var(--radius-lg); margin-top: 2rem; border: 1px solid var(--gray-200);">
+                    <h3 style="margin-bottom: 1.2rem; font-size: 1.1rem; color: var(--gray-800); display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                        Yetkazib berish xizmati
+                    </h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; color: var(--gray-600);">
                         <span>Yetkazib berish vaqti:</span>
-                        <span style="font-weight: bold;">2-3 kun</span>
+                        <span style="font-weight: 700; color: var(--gray-900);">2-3 kun</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; color: var(--gray-600);">
                         <span>Yetkazib berish narxi:</span>
-                        <span style="font-weight: bold; color: #27ae60;">Bepul</span>
+                        <span style="font-weight: 700; color: var(--secondary);">Bepul (Aksiya)</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Qaytarish davri:</span>
-                        <span style="font-weight: bold;">30 kun</span>
+                    <div style="display: flex; justify-content: space-between; color: var(--gray-600);">
+                        <span>Qaytarish va almashish:</span>
+                        <span style="font-weight: 700; color: var(--gray-900);">30 kun ichida</span>
                     </div>
                 </div>
 
                 <!-- SELLER INFO -->
-                <div style="background-color: #ecf0f1; padding: 1.5rem; border-radius: 4px; margin-top: 1rem;">
-                    <h3 style="margin-bottom: 1rem;">Sotuvchi</h3>
+                <div style="background-color: transparent; padding: 1.5rem 0; margin-top: 1rem; border-top: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="width: 60px; height: 60px; background-color: #95a5a6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">👤</div>
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary), #8B5CF6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">JEM</div>
                         <div>
-                            <div style="font-weight: bold;">{{ product.seller.name|default:"Onlayn Magazin" }}</div>
-                            <div style="font-size: 0.9rem; color: #555;">⭐ {{ product.seller_rating|default:"4.8" }}/5</div>
+                            <div style="font-weight: 700; color: var(--gray-900);">JobEasy Mall</div>
+                            <div style="font-size: 0.9rem; color: var(--primary); font-weight: 600;">Tasdiqlangan sotuvchi</div>
                         </div>
                     </div>
                 </div>
@@ -115,38 +88,9 @@
         </div>
     </div>
 
-    <!-- RELATED PRODUCTS -->
-    <div style="margin-top: 3rem;">
-        <h2 style="margin-bottom: 2rem; color: #2c3e50; font-size: 1.8rem;">Shunga o'xshash mahsulotlar</h2>
-        {% if related_products %}
-            <div class="products-grid">
-                {% for rel_product in related_products %}
-                    <div class="product-card">
-                        <div class="product-image">
-                            {% if rel_product.image %}
-                                <img src="{{ rel_product.image.url }}" alt="{{ rel_product.name }}">
-                            {% else %}
-                                <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
-                            {% endif %}
-                        </div>
-                        <div class="product-info">
-                            <a href="/product/{{ rel_product.id }}/" class="product-name">{{ rel_product.name }}</a>
-                            <div class="product-category">{{ rel_product.category.name }}</div>
-                            <div class="product-price">{{ rel_product.price }} so'm</div>
-                            <div class="product-actions">
-                                <a href="/product/{{ rel_product.id }}/" class="btn btn-primary">Ko'rish</a>
-                                <button class="btn btn-save" onclick="toggleSaved(event, {{ rel_product.id }})">❤️</button>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
-
     <script>
         function addToCart(productId) {
-            fetch(`/api/cart/add/`, {
+            fetch(`/products/cart/add/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken'),
@@ -163,22 +107,7 @@
 
         function toggleSaved(event, productId) {
             event.preventDefault();
-            fetch(`/api/product/${productId}/save/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.saved) {
-                    alert('Saqlandi!');
-                } else {
-                    alert('Saqlashdan olib tashlandi!');
-                }
-            })
-            .catch(error => console.error('Error:', error));
+            window.location.href = "/users/addremovesaved/" + productId;
         }
 
         function getCookie(name) {

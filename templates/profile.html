@@ -1,10 +1,148 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block title %}{{ user.username }} profili{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-card {
+        max-width: 650px;
+        margin: 2rem auto;
+        background-color: #fff;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+        border: 1px solid var(--gray-200);
+    }
+    
+    .profile-header {
+        background: linear-gradient(135deg, var(--primary), #8B5CF6);
+        padding: 4rem 2rem 3rem;
+        text-align: center;
+        color: white;
+        position: relative;
+    }
+    
+    .profile-avatar {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        border: 5px solid #fff;
+        object-fit: cover;
+        margin-bottom: 1.5rem;
+        background-color: var(--gray-100);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        z-index: 2;
+    }
+    
+    .profile-name {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .profile-username {
+        font-size: 1.15rem;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+    
+    .profile-body {
+        padding: 2.5rem;
+    }
+    
+    .profile-info-row {
+        display: flex;
+        padding: 1.2rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .profile-info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        flex: 1;
+        font-weight: 600;
+        color: var(--gray-500);
+        font-size: 0.95rem;
+    }
+    
+    .info-value {
+        flex: 2;
+        color: var(--gray-900);
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
+    
+    .profile-actions {
+        padding: 1.5rem 2.5rem;
+        background-color: var(--gray-50);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        border-top: 1px solid var(--gray-200);
+    }
+    
+    .btn-outline {
+        padding: 0.8rem 1.8rem;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-outline:hover {
+        background-color: var(--primary);
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-card">
+    <div class="profile-header">
+        {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="profile-avatar">
+        {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=2c3e50&color=fff" alt="{{ user.username }}" class="profile-avatar">
+        {% endif %}
+        <h2 class="profile-name">{{ user.first_name }} {{ user.last_name }}</h2>
+        <div class="profile-username">@{{ user.username }}</div>
+    </div>
+    
+    <div class="profile-body">
+        <div class="profile-info-row">
+            <div class="info-label">Email</div>
+            <div class="info-value">{{ user.email|default:"Ko'rsatilmagan" }}</div>
+        </div>
+        <div class="profile-info-row">
+            <div class="info-label">Telefon raqam</div>
+            <div class="info-value">{{ user.phone_number|default:"Ko'rsatilmagan" }}</div>
+        </div>
+        <div class="profile-info-row">
+            <div class="info-label">Telegram username</div>
+            <div class="info-value">{% if user.tg_username %}@{{ user.tg_username }}{% else %}Ko'rsatilmagan{% endif %}</div>
+        </div>
+        <div class="profile-info-row">
+            <div class="info-label">Ro'yxatdan o'tgan sana</div>
+            <div class="info-value">{{ user.date_joined|date:"d M Y" }}</div>
+        </div>
+    </div>
+    
+    {% if request.user == user %}
+    <div class="profile-actions">
+        <a href="{% url 'users:update' %}" class="btn-outline">Profilni tahrirlash</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
