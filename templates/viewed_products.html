@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Ko'rilgan Mahsulotlar - Onlayn Magazin{% endblock %}
+
+{% block content %}
+    <h1 style="margin-bottom: 2rem; color: #2c3e50;">👁️ Ko'rilgan Mahsulotlar</h1>
+
+    {% if viewed_products %}
+        <div style="background-color: #fff; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <button onclick="clearViewed()" class="btn btn-primary" style="padding: 0.6rem 1.2rem; background-color: #e74c3c;">🗑️ Barchani o'chirish</button>
+        </div>
+
+        <div class="products-grid">
+            {% for product in viewed_products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-info">
+                        <a href="/product/{{ product.id }}/" class="product-name">{{ product.name }}</a>
+                        <div class="product-category">{{ product.category.name }}</div>
+                        <div class="product-price">{{ product.price }} so'm</div>
+                        <div class="product-rating">⭐ {{ product.rating|default:"4.5" }}/5</div>
+                        
+                        <div class="product-actions">
+                            <a href="/product/{{ product.id }}/" class="btn btn-primary">Ko'rish</a>
+                            <button class="btn btn-save" onclick="toggleSaved(event, {{ product.id }})">❤️</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 4rem 2rem; background-color: #f8f9fa; border-radius: 8px;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">👀</div>
+            <h2 style="color: #7f8c8d; margin-bottom: 1rem;">Ko'rilgan mahsulotlar yo'q</h2>
+            <p style="color: #95a5a6; margin-bottom: 2rem;">Siz hali mahsulot ko'rmadingiz</p>
+            <a href="/products/" class="btn btn-primary" style="display: inline-block; padding: 0.8rem 1.5rem; text-decoration: none;">Mahsulotlarni ko'rish</a>
+        </div>
+    {% endif %}
+
+    <script>
+        function toggleSaved(event, productId) {
+            event.preventDefault();
+            fetch(`/api/product/${productId}/save/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.saved ? 'Saqlandi!' : 'Saqlashdan olib tashlandi!');
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function clearViewed() {
+            if (confirm('Barchani o\'chirishni xohlaysizmi?')) {
+                fetch('/api/viewed/clear/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    location.reload();
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Onlayn Magazin{% endblock %}
+
+{% block content %}
+    <!-- BREADCRUMB -->
+    <div style="margin-bottom: 2rem; font-size: 0.9rem;">
+        <a href="/" style="color: #3498db; text-decoration: none;">Bosh sahifa</a> /
+        <a href="/products/" style="color: #3498db; text-decoration: none;">Mahsulotlar</a> /
+        <a href="/products/?category={{ product.category.id }}" style="color: #3498db; text-decoration: none;">{{ product.category.name }}</a> /
+        <span style="color: #555;">{{ product.name }}</span>
+    </div>
+
+    <!-- PRODUCT DETAIL -->
+    <div class="product-detail">
+        <div class="detail-container">
+            
+            <!-- LEFT: IMAGE -->
+            <div>
+                <div class="detail-image">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImage">
+                    {% else %}
+                        <span style="color: #bdc3c7; font-size: 5rem;">📦</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- RIGHT: INFO -->
+            <div>
+                <h1>{{ product.name }}</h1>
+                
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="product-rating">⭐ {{ product.rating|default:"4.5" }}/5</div>
+                    <span style="color: #7f8c8d;">({{ product.reviews_count|default:"0" }} sharh)</span>
+                    {% if product.in_stock %}
+                        <span style="color: #27ae60; font-weight: bold;">✓ Mavjud</span>
+                    {% else %}
+                        <span style="color: #e74c3c; font-weight: bold;">✗ Mavjud emas</span>
+                    {% endif %}
+                </div>
+
+                <div class="detail-price">{{ product.price }} so'm</div>
+
+                {% if product.original_price and product.original_price > product.price %}
+                    <div style="margin-bottom: 1rem;">
+                        <span style="text-decoration: line-through; color: #95a5a6;">{{ product.original_price }} so'm</span>
+                        <span style="color: #e74c3c; font-weight: bold; margin-left: 1rem;">Chegirma: {{ discount_percent }}%</span>
+                    </div>
+                {% endif %}
+
+                <div class="detail-description">
+                    <h3>Tavsif</h3>
+                    <p>{{ product.description }}</p>
+                </div>
+
+                <!-- SPECIFICATIONS -->
+                {% if product.specifications %}
+                    <div class="detail-specs">
+                        <h3>Xususiyatlari</h3>
+                        <div class="spec-row">
+                            <div class="spec-label">Brand</div>
+                            <div class="spec-value">{{ product.brand|default:"Noma'lum" }}</div>
+                        </div>
+                        <div class="spec-row">
+                            <div class="spec-label">Model</div>
+                            <div class="spec-value">{{ product.model|default:"Noma'lum" }}</div>
+                        </div>
+                        <div class="spec-row">
+                            <div class="spec-label">Rang</div>
+                            <div class="spec-value">{{ product.color|default:"Noma'lum" }}</div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- ACTIONS -->
+                <div class="detail-actions">
+                    {% if product.in_stock %}
+                        <button class="btn btn-primary" style="flex: 2;" onclick="addToCart({{ product.id }})">🛒 Savatchaga qo'sh</button>
+                    {% else %}
+                        <button class="btn btn-primary" style="flex: 2; opacity: 0.5; cursor: not-allowed;" disabled>Mavjud emas</button>
+                    {% endif %}
+                    <button class="btn btn-save" onclick="toggleSaved(event, {{ product.id }})">❤️ Saqlash</button>
+                </div>
+
+                <!-- DELIVERY INFO -->
+                <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 4px; margin-top: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem;">📦 Yetkazib berish</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem;">
+                        <span>Yetkazib berish vaqti:</span>
+                        <span style="font-weight: bold;">2-3 kun</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem;">
+                        <span>Yetkazib berish narxi:</span>
+                        <span style="font-weight: bold; color: #27ae60;">Bepul</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Qaytarish davri:</span>
+                        <span style="font-weight: bold;">30 kun</span>
+                    </div>
+                </div>
+
+                <!-- SELLER INFO -->
+                <div style="background-color: #ecf0f1; padding: 1.5rem; border-radius: 4px; margin-top: 1rem;">
+                    <h3 style="margin-bottom: 1rem;">Sotuvchi</h3>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 60px; height: 60px; background-color: #95a5a6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">👤</div>
+                        <div>
+                            <div style="font-weight: bold;">{{ product.seller.name|default:"Onlayn Magazin" }}</div>
+                            <div style="font-size: 0.9rem; color: #555;">⭐ {{ product.seller_rating|default:"4.8" }}/5</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RELATED PRODUCTS -->
+    <div style="margin-top: 3rem;">
+        <h2 style="margin-bottom: 2rem; color: #2c3e50; font-size: 1.8rem;">Shunga o'xshash mahsulotlar</h2>
+        {% if related_products %}
+            <div class="products-grid">
+                {% for rel_product in related_products %}
+                    <div class="product-card">
+                        <div class="product-image">
+                            {% if rel_product.image %}
+                                <img src="{{ rel_product.image.url }}" alt="{{ rel_product.name }}">
+                            {% else %}
+                                <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-info">
+                            <a href="/product/{{ rel_product.id }}/" class="product-name">{{ rel_product.name }}</a>
+                            <div class="product-category">{{ rel_product.category.name }}</div>
+                            <div class="product-price">{{ rel_product.price }} so'm</div>
+                            <div class="product-actions">
+                                <a href="/product/{{ rel_product.id }}/" class="btn btn-primary">Ko'rish</a>
+                                <button class="btn btn-save" onclick="toggleSaved(event, {{ rel_product.id }})">❤️</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function addToCart(productId) {
+            fetch(`/api/cart/add/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ product_id: productId, quantity: 1 })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Savatchaga qo\'shildi!');
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function toggleSaved(event, productId) {
+            event.preventDefault();
+            fetch(`/api/product/${productId}/save/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.saved) {
+                    alert('Saqlandi!');
+                } else {
+                    alert('Saqlashdan olib tashlandi!');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+{% endblock %}

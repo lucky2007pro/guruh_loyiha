@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Bosh sahifa - Onlayn Magazin{% endblock %}
+
+{% block content %}
+    <!-- HERO SECTION -->
+    <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 3rem 2rem; border-radius: 8px; margin-bottom: 3rem; text-align: center;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Xush kelibsiz! 👋</h1>
+        <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">Eng sifatli mahsulotlar uchun eng yaxshi narxlar</p>
+        <a href="/products/" style="display: inline-block; background-color: white; color: #3498db; padding: 0.8rem 2rem; text-decoration: none; border-radius: 4px; font-weight: bold; transition: all 0.3s;">Xaridor qil →</a>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="categories-menu">
+        <h3>Kategoriyalar</h3>
+        <ul class="categories-list">
+            <li><a href="/products/?category=all">Barcha mahsulotlar</a></li>
+            {% for category in categories %}
+                <li><a href="/products/?category={{ category.id }}">{{ category.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- FEATURED PRODUCTS -->
+    <h2 style="margin-bottom: 2rem; color: #2c3e50; font-size: 1.8rem;">⭐ Tavsiyalangan Mahsulotlar</h2>
+    
+    {% if featured_products %}
+        <div class="products-grid">
+            {% for product in featured_products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
+                        {% endif %}
+                        {% if product.discount %}
+                            <div class="product-badge">-{{ product.discount }}%</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-info">
+                        <a href="/product/{{ product.id }}/" class="product-name">{{ product.name }}</a>
+                        <div class="product-category">{{ product.category.name }}</div>
+                        <div class="product-price">{{ product.price }} so'm</div>
+                        <div class="product-rating">⭐ {{ product.rating|default:"4.5" }}/5</div>
+                        
+                        <div class="product-actions">
+                            <a href="/product/{{ product.id }}/" class="btn btn-primary">Ko'rish</a>
+                            <button class="btn btn-save" onclick="toggleSaved({{ product.id }})">❤️</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; background-color: #f8f9fa; border-radius: 8px;">
+            <p style="font-size: 1.1rem; color: #7f8c8d;">Hozir mahsulotlar mavjud emas</p>
+        </div>
+    {% endif %}
+
+    <!-- RECENT PRODUCTS -->
+    <h2 style="margin-top: 3rem; margin-bottom: 2rem; color: #2c3e50; font-size: 1.8rem;">🆕 Yangi Mahsulotlar</h2>
+    
+    {% if recent_products %}
+        <div class="products-grid">
+            {% for product in recent_products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-info">
+                        <a href="/product/{{ product.id }}/" class="product-name">{{ product.name }}</a>
+                        <div class="product-category">{{ product.category.name }}</div>
+                        <div class="product-price">{{ product.price }} so'm</div>
+                        <div class="product-rating">⭐ {{ product.rating|default:"4.5" }}/5</div>
+                        
+                        <div class="product-actions">
+                            <a href="/product/{{ product.id }}/" class="btn btn-primary">Ko'rish</a>
+                            <button class="btn btn-save" onclick="toggleSaved({{ product.id }})">❤️</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script>
+        function toggleSaved(productId) {
+            fetch(`/api/product/${productId}/save/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.saved) {
+                    event.target.classList.add('saved');
+                } else {
+                    event.target.classList.remove('saved');
+                }
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+{% endblock %}

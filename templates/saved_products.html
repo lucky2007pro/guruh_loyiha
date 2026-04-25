@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Saqlangan Mahsulotlar - Onlayn Magazin{% endblock %}
+
+{% block content %}
+    <h1 style="margin-bottom: 2rem; color: #2c3e50;">❤️ Saqlangan Mahsulotlar</h1>
+
+    {% if saved_products %}
+        <div class="products-grid">
+            {% for saved in saved_products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        {% if saved.product.image %}
+                            <img src="{{ saved.product.image.url }}" alt="{{ saved.product.name }}">
+                        {% else %}
+                            <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-info">
+                        <a href="/product/{{ saved.product.id }}/" class="product-name">{{ saved.product.name }}</a>
+                        <div class="product-category">{{ saved.product.category.name }}</div>
+                        <div class="product-price">{{ saved.product.price }} so'm</div>
+                        <div class="product-rating">⭐ {{ saved.product.rating|default:"4.5" }}/5</div>
+                        <div style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 1rem;">
+                            Saqlangan: {{ saved.created_at|date:"Y-m-d" }}
+                        </div>
+                        
+                        <div class="product-actions">
+                            <a href="/product/{{ saved.product.id }}/" class="btn btn-primary">Ko'rish</a>
+                            <button class="btn btn-save saved" onclick="removeSaved(event, {{ saved.product.id }})">❤️</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 4rem 2rem; background-color: #f8f9fa; border-radius: 8px;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">💔</div>
+            <h2 style="color: #7f8c8d; margin-bottom: 1rem;">Saqlangan mahsulotlar yo'q</h2>
+            <p style="color: #95a5a6; margin-bottom: 2rem;">Mahsulotlarni ❤️ tugmasiga bosib saqlashingiz mumkin</p>
+            <a href="/products/" class="btn btn-primary" style="display: inline-block; padding: 0.8rem 1.5rem; text-decoration: none;">Mahsulotlarni ko'rish</a>
+        </div>
+    {% endif %}
+
+    <script>
+        function removeSaved(event, productId) {
+            event.preventDefault();
+            fetch(`/api/product/${productId}/save/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                location.reload();
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+{% endblock %}
