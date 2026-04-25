@@ -20,7 +20,7 @@ class Product(models.Model):
     address = models.CharField(max_length=150)
     phone_number = models.CharField(max_length=17)
     tg_username = models.CharField(max_length=100)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return str(self.title)

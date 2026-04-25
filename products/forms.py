@@ -1,9 +1,12 @@
 from .models import Product
 from django import forms
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
 
 class NewProductForm(forms.ModelForm):
-    images = forms.ImageField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=False)
+    images = forms.FileField(widget=MultipleFileInput(), required=False)
 
     class Meta:
         model = Product
@@ -17,10 +20,8 @@ class NewProductForm(forms.ModelForm):
 
 
 class ProductForm(forms.ModelForm):
-    images = forms.ImageField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=False)
+    images = forms.FileField(widget=MultipleFileInput(), required=False)
 
     class Meta:
         model = Product
         fields = ('title', 'description', 'price', 'address', 'category', 'phone_number', 'tg_username')
-
-

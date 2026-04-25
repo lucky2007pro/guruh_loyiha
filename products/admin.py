@@ -6,7 +6,7 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title', 'id', 'created_at','author', 'category')
+    list_display = ('title', 'id', 'date','author', 'category')
     inlines = [ProductImageInline]
 
 admin.site.register(Category)
