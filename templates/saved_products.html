@@ -10,15 +10,15 @@
             {% for saved in saved_products %}
                 <div class="product-card">
                     <div class="product-image">
-                        {% if saved.product.image %}
-                            <img src="{{ saved.product.image.url }}" alt="{{ saved.product.name }}">
+                        {% if saved.product.productimage_set.first %}
+                            <img src="{{ saved.product.productimage_set.first.image.url }}" alt="{{ saved.product.title }}">
                         {% else %}
                             <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
                         {% endif %}
                     </div>
 
                     <div class="product-info">
-                        <a href="/product/{{ saved.product.id }}/" class="product-name">{{ saved.product.name }}</a>
+                        <a href="/product/{{ saved.product.id }}/" class="product-name">{{ saved.product.title }}</a>
                         <div class="product-category">{{ saved.product.category.name }}</div>
                         <div class="product-price">{{ saved.product.price }} so'm</div>
                         <div class="product-rating">⭐ {{ saved.product.rating|default:"4.5" }}/5</div>
@@ -27,7 +27,7 @@
                         </div>
                         
                         <div class="product-actions">
-                            <a href="/product/{{ saved.product.id }}/" class="btn btn-primary">Ko'rish</a>
+                            <a href="/product/detail/{{ saved.product.id }}/" class="btn btn-primary">Ko'rish</a>
                             <button class="btn btn-save saved" onclick="removeSaved(event, {{ saved.product.id }})">❤️</button>
                         </div>
                     </div>
@@ -46,33 +46,7 @@
     <script>
         function removeSaved(event, productId) {
             event.preventDefault();
-            fetch(`/api/product/${productId}/save/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                location.reload();
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
+            window.location.href = `/users/addremovesaved/${productId}`;
         }
     </script>
 {% endblock %}

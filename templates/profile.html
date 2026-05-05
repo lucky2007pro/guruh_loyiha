@@ -141,7 +141,9 @@
     
     {% if request.user == user %}
     <div class="profile-actions">
-        <a href="{% url 'users:update' %}" class="btn-outline">Profilni tahrirlash</a>
+        <a href="{% url 'users:orders' %}" class="btn-outline">📦 Buyurtmalarim</a>
+        <a href="{% url 'users:wallet' %}" class="btn-outline">💳 Hamyon</a>
+        <a href="{% url 'users:update' %}" class="btn-outline">✏ Profilni tahrirlash</a>
     </div>
     {% endif %}
 </div>

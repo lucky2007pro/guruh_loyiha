@@ -1,10 +1,14 @@
 import json
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product, Category, ProductImage, Comment, Cart, CartItem
-from .forms import ProductForm, NewProductForm
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+
+from .forms import ProductForm, NewProductForm
+from .models import Product, Category, ProductImage, Comment, Cart, CartItem, Order, OrderItem, Rating
 
 
 # Create your views here.
@@ -43,10 +47,24 @@ def product_detail(request, id):
         if product.id not in r_viewed:
             r_viewed.append(product.id)
             request.session.modified = True
+            Product.objects.filter(id=product.id).update(view_count=product.view_count + 1)
     else:
         request.session["recently_viewed"] = [product.id]
+        Product.objects.filter(id=product.id).update(view_count=product.view_count + 1)
 
-    return render(request, 'products_detail.html', {'product': product})
+    user_rating = None
+    if request.user.is_authenticated:
+        user_rating = Rating.objects.filter(product=product, user=request.user).first()
+
+    comments = product.comments.select_related('author').all()
+    images = product.productimage_set.all()
+
+    return render(request, 'products_detail.html', {
+        'product': product,
+        'user_rating': user_rating,
+        'comments': comments,
+        'images': images,
+    })
 
 
 @login_required(login_url='login')
@@ -152,39 +170,174 @@ def cart_detail(request):
 
 @login_required(login_url='login')
 def checkout(request):
+    from users.models import Wallet
+    from decimal import Decimal
+
     cart = getattr(request.user, 'cart', None)
     if not cart or not cart.items.exists():
         messages.error(request, "Savatingiz bo'sh")
         return redirect('main:index')
-        
+
+    items = cart.items.select_related('product').all()
+    total_price = sum(item.product.price * item.quantity for item in items if item.product)
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
+
     if request.method == 'POST':
-        address = request.POST.get('shipping_address')
-        phone = request.POST.get('phone_number')
-        customer_name = request.POST.get('customer_name')
-        
-        items = cart.items.all()
-        total_price = sum(item.product.price * item.quantity for item in items if item.product)
-        
+        address = request.POST.get('shipping_address', '').strip()
+        phone = request.POST.get('phone_number', '').strip()
+        customer_name = request.POST.get('customer_name', '').strip()
+        payment_method = request.POST.get('payment_method', 'cash')
+
+        if not address or not phone or not customer_name:
+            messages.error(request, "Barcha maydonlarni to'ldiring.")
+            return render(request, 'checkout.html', {
+                'items': items, 'total_price': total_price, 'wallet': wallet
+            })
+
+        # Wallet to'lov
+        if payment_method == 'wallet':
+            wallet.refresh_from_db()
+            if wallet.balance < total_price:
+                messages.error(
+                    request,
+                    f"Hamyonda yetarli mablag' yo'q. Balans: {wallet.balance} so'm, "
+                    f"kerak: {total_price} so'm."
+                )
+                return render(request, 'checkout.html', {
+                    'items': items, 'total_price': total_price, 'wallet': wallet
+                })
+            # Hisobdan yeching
+            wallet.balance = wallet.balance - Decimal(str(total_price))
+            wallet.save()
+            is_paid = True
+        else:
+            is_paid = False
+
         order = Order.objects.create(
             user=request.user,
             customer_name=customer_name,
             total_price=total_price,
             shipping_address=address,
-            phone_number=phone
+            phone_number=phone,
+            payment_method=payment_method,
+            is_paid=is_paid,
         )
-        
+
         for item in items:
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                price=item.product.price,
-                quantity=item.quantity
-            )
-            
+            if item.product:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    price=item.product.price,
+                    quantity=item.quantity,
+                )
+
         cart.items.all().delete()
-        messages.success(request, "Buyurtmangiz qabul qilindi!")
-        return redirect('main:index')
-        
-    items = cart.items.all()
-    total_price = sum(item.product.price * item.quantity for item in items if item.product)
-    return render(request, 'checkout.html', {'items': items, 'total_price': total_price})
+
+        if payment_method == 'wallet':
+            messages.success(
+                request,
+                f"Buyurtmangiz qabul qilindi! Hamyondan {total_price} so'm yechildi. "
+                f"Qolgan balans: {wallet.balance} so'm."
+            )
+        else:
+            messages.success(request, "Buyurtmangiz qabul qilindi! Kuryer kelganda to'laysiz.")
+
+        return redirect('users:orders')
+
+    return render(request, 'checkout.html', {
+        'items': items,
+        'total_price': total_price,
+        'wallet': wallet,
+    })
+
+
+def product_list(request):
+    products = Product.objects.select_related('category', 'author').prefetch_related('productimage_set', 'ratings')
+    categories = Category.objects.all()
+
+    q = request.GET.get('q', '')
+    category_id = request.GET.get('category', '')
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
+    sort = request.GET.get('sort', 'latest')
+
+    if q:
+        products = products.filter(Q(title__icontains=q) | Q(description__icontains=q))
+    if category_id:
+        products = products.filter(category_id=category_id)
+    if min_price:
+        try:
+            products = products.filter(price__gte=float(min_price))
+        except ValueError:
+            pass
+    if max_price:
+        try:
+            products = products.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
+
+    if sort == 'price_low':
+        products = products.order_by('price')
+    elif sort == 'price_high':
+        products = products.order_by('-price')
+    elif sort == 'popular':
+        products = products.order_by('-view_count')
+    else:
+        products = products.order_by('-id')
+
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'product_list.html', {
+        'products': page_obj,
+        'categories': categories,
+        'page_obj': page_obj,
+        'is_paginated': paginator.num_pages > 1,
+    })
+
+
+@login_required(login_url='login')
+def rate_product(request, product_id):
+    if request.method == 'POST':
+        product = get_object_or_404(Product, id=product_id)
+        try:
+            score = int(request.POST.get('score', 0))
+            if 1 <= score <= 5:
+                Rating.objects.update_or_create(
+                    product=product, user=request.user,
+                    defaults={'score': score}
+                )
+                messages.success(request, f'Reytingingiz ({score}/5) saqlandi!')
+            else:
+                messages.error(request, 'Noto\'g\'ri reyting qiymati.')
+        except (ValueError, TypeError):
+            messages.error(request, 'Xato yuz berdi.')
+    return redirect('products:detail', id=product_id)
+
+
+@login_required(login_url='login')
+def remove_from_cart(request, item_id):
+    if request.method == 'POST':
+        cart = getattr(request.user, 'cart', None)
+        if cart:
+            CartItem.objects.filter(id=item_id, cart=cart).delete()
+            messages.success(request, 'Savatdan o\'chirildi.')
+    return redirect('products:cart_detail')
+
+
+@login_required(login_url='login')
+def update_cart_item(request, item_id):
+    if request.method == 'POST':
+        cart = getattr(request.user, 'cart', None)
+        if cart:
+            try:
+                qty = int(request.POST.get('quantity', 1))
+                if qty > 0:
+                    CartItem.objects.filter(id=item_id, cart=cart).update(quantity=qty)
+                else:
+                    CartItem.objects.filter(id=item_id, cart=cart).delete()
+            except (ValueError, TypeError):
+                pass
+    return redirect('products:cart_detail')

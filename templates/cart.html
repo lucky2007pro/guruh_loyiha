@@ -176,7 +176,19 @@
                 <div class="item-details">
                     <a href="{% url 'products:detail' item.product.id %}" class="item-title">{{ item.product.title }}</a>
                     <div class="item-price">{{ item.product.price }} so'm</div>
-                    <div class="item-qty">Soni: {{ item.quantity }} dona</div>
+                    <div style="display:flex;align-items:center;gap:1rem;margin-top:.5rem;flex-wrap:wrap;">
+                        <form method="POST" action="{% url 'products:update_cart_item' item.id %}" style="display:flex;align-items:center;gap:.4rem;">
+                            {% csrf_token %}
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99"
+                                style="width:60px;padding:.3rem .5rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:.9rem;text-align:center;">
+                            <button type="submit" style="padding:.3rem .7rem;background:var(--primary);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-size:.8rem;">✓</button>
+                        </form>
+                        <form method="POST" action="{% url 'products:remove_from_cart' item.id %}">
+                            {% csrf_token %}
+                            <button type="submit" style="padding:.3rem .7rem;background:#FEE2E2;color:var(--danger);border:none;border-radius:var(--radius-md);cursor:pointer;font-size:.85rem;font-weight:600;">🗑 O'chirish</button>
+                        </form>
+                        <span style="color:var(--gray-500);font-size:.9rem;">Jami: <strong style="color:var(--gray-900);">{{ item.product.price }} × {{ item.quantity }}</strong></span>
+                    </div>
                 </div>
             </div>
             {% endfor %}

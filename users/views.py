@@ -1,13 +1,14 @@
-from django.shortcuts import render, redirect
-from django.views.generic import UpdateView
-
-from .forms import SignUpForm, UpdateProfileForm
-from django.views import View
 from django.contrib import messages
-from django.shortcuts import get_object_or_404
-from .models import CustomUser, Saved
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect
+from django.views import View
+
 from products.models import Product
+from .forms import SignUpForm, UpdateProfileForm
+from .models import CustomUser, Saved
+
+
 # Create your views here.
 
 class SignUpView(UserPassesTestMixin, View):
@@ -70,7 +71,7 @@ class SavedView(LoginRequiredMixin, View):
         if q:
             products = Product.objects.filter(title__icontains=q)
             saveds = Saved.objects.filter(author=request.user, product__in=products)
-        return render(request, 'saved_products.html', {"saveds": saveds})
+        return render(request, 'saved_products.html', {"saved_products": saveds})
 
 
 class RecentlyViewedView(View):
@@ -83,7 +84,13 @@ class RecentlyViewedView(View):
             q = request.GET.get('q', '')
             if q:
                 products = products.filter(title__icontains=q)
-        return render(request, "viewed_products.html", {'products': products})
+        return render(request, "viewed_products.html", {'viewed_products': products})
+
+class ClearRecentlyViewedView(View):
+    def get(self, request):
+        if "recently_viewed" in request.session:
+            del request.session["recently_viewed"]
+        return redirect('users:recently_viewed')
 
 
 from django.db.models import F
@@ -152,3 +159,28 @@ class WithdrawView(LoginRequiredMixin, View):
             except:
                 messages.error(request, "Xato summa kiritildi.")
         return redirect('users:wallet')
+
+
+class DeleteCardView(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def post(self, request, card_id):
+        wallet, created = Wallet.objects.get_or_create(user=request.user)
+        card = wallet.cards.filter(id=card_id).first()
+        if card:
+            card.delete()
+            messages.success(request, 'Karta muvaffaqiyatli o\'chirildi.')
+        else:
+            messages.error(request, 'Karta topilmadi.')
+        return redirect('users:wallet')
+
+
+from products.models import Order
+
+
+class OrderHistoryView(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def get(self, request):
+        orders = Order.objects.filter(user=request.user).prefetch_related('items__product').order_by('-created_at')
+        return render(request, 'orders.html', {'orders': orders})

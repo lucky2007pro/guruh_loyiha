@@ -2,19 +2,35 @@ from django.shortcuts import render
 from django.views import View
 from products.models import Product, Category
 from django.shortcuts import get_object_or_404
+from django.core.paginator import Paginator
 # Create your views here.
 
 def for_all_pages(requests):
     categories = Category.objects.all()
-    return {"categories": categories}
+    cart_count = 0
+    if requests.user.is_authenticated:
+        cart = getattr(requests.user, 'cart', None)
+        if cart:
+            cart_count = cart.items.count()
+    return {"categories": categories, "cart_count": cart_count}
 
 class IndexView(View):
     def get(self, request):
-        products = Product.objects.all()
+        products = Product.objects.select_related('category').prefetch_related('productimage_set')
         q = request.GET.get('q', '')
+        category_id = request.GET.get('category', '')
         if q:
             products = products.filter(title__icontains=q)
-        return render(request, 'index.html', {'products': products})
+        if category_id and category_id != 'all':
+            products = products.filter(category_id=category_id)
+        paginator = Paginator(products, 12)
+        page_obj = paginator.get_page(request.GET.get('page'))
+        return render(request, 'index.html', {
+            'products': page_obj,
+            'page_obj': page_obj,
+            'is_paginated': paginator.num_pages > 1,
+            'selected_category': category_id,
+        })
 
 class CategoryView(View):
     def get(self, request, category_name):

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Buyurtmalarim - JobEasy Mall{% endblock %}
+{% block extra_css %}
+<style>
+.order-card{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--gray-200);box-shadow:var(--shadow);margin-bottom:1.5rem;overflow:hidden;}
+.order-header{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;background:var(--gray-50);border-bottom:1px solid var(--gray-200);flex-wrap:wrap;gap:.8rem;}
+.order-id{font-size:1.1rem;font-weight:700;color:var(--gray-900);}
+.order-date{font-size:.85rem;color:var(--gray-500);}
+.status-badge{padding:.3rem .9rem;border-radius:9999px;font-size:.8rem;font-weight:700;text-transform:uppercase;}
+.status-pending{background:#FEF3C7;color:#92400E;}
+.status-confirmed{background:#DBEAFE;color:#1E40AF;}
+.status-shipped{background:#E0E7FF;color:#3730A3;}
+.status-delivered{background:#D1FAE5;color:#065F46;}
+.status-cancelled{background:#FEE2E2;color:#991B1B;}
+.order-body{padding:1.5rem;}
+.order-items-table{width:100%;border-collapse:collapse;margin-bottom:1.2rem;}
+.order-items-table th{text-align:left;font-size:.8rem;color:var(--gray-500);text-transform:uppercase;padding:.5rem .8rem;border-bottom:1px solid var(--gray-200);}
+.order-items-table td{padding:.7rem .8rem;border-bottom:1px solid var(--gray-100);font-size:.95rem;color:var(--gray-800);}
+.order-items-table tr:last-child td{border-bottom:none;}
+.order-total{display:flex;justify-content:flex-end;gap:.5rem;font-size:1.05rem;font-weight:700;color:var(--gray-900);padding-top:.8rem;border-top:2px solid var(--gray-200);}
+.order-meta{display:flex;gap:2rem;flex-wrap:wrap;background:var(--gray-50);padding:1rem 1.5rem;border-top:1px solid var(--gray-200);font-size:.9rem;color:var(--gray-600);}
+.order-meta span strong{color:var(--gray-800);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+        <h1 style="font-size:1.8rem;font-weight:800;color:var(--gray-900);">📦 Buyurtmalarim</h1>
+        <p style="color:var(--gray-500);margin-top:.3rem;">Barcha buyurtmalaringiz tarixi</p>
+    </div>
+    <a href="{% url 'main:index' %}" class="btn btn-primary">Xaridni davom ettirish</a>
+</div>
+
+{% if orders %}
+    {% for order in orders %}
+    <div class="order-card">
+        <div class="order-header">
+            <div>
+                <div class="order-id">Buyurtma #{{ order.id }}</div>
+                <div class="order-date">{{ order.created_at|date:"d M Y, H:i" }}</div>
+            </div>
+            <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+                <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                {% if order.payment_method == 'wallet' %}
+                    <span class="status-badge" style="background:#EDE9FE;color:#5B21B6;">💳 Hamyon</span>
+                {% else %}
+                    <span class="status-badge" style="background:#F3F4F6;color:#374151;">💵 Naqd</span>
+                {% endif %}
+                {% if order.is_paid %}
+                    <span class="status-badge" style="background:#D1FAE5;color:#065F46;">✓ To'langan</span>
+                {% else %}
+                    <span class="status-badge" style="background:#FEF3C7;color:#92400E;">⏳ To'lanmagan</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="order-body">
+            <table class="order-items-table">
+                <thead>
+                    <tr>
+                        <th>Mahsulot</th>
+                        <th>Narx</th>
+                        <th>Miqdor</th>
+                        <th>Jami</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>
+                            {% if item.product %}
+                                <a href="{% url 'products:detail' item.product.id %}" style="color:var(--primary);text-decoration:none;font-weight:600;">{{ item.product.title|truncatechars:40 }}</a>
+                            {% else %}
+                                <span style="color:var(--gray-400);">O'chirilgan mahsulot</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.price }} so'm</td>
+                        <td>{{ item.quantity }} ta</td>
+                        <td style="font-weight:700;">{{ item.price|floatformat:0 }}×{{ item.quantity }} = {{ item.price|floatformat:0 }} so'm</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="order-total">
+                <span>Jami:</span>
+                <span style="color:var(--primary);">{{ order.total_price }} so'm</span>
+            </div>
+        </div>
+        <div class="order-meta">
+            <span>📍 <strong>Manzil:</strong> {{ order.shipping_address }}</span>
+            <span>📞 <strong>Tel:</strong> {{ order.phone_number }}</span>
+            {% if order.customer_name %}<span>👤 <strong>Ism:</strong> {{ order.customer_name }}</span>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div style="text-align:center;padding:5rem 2rem;background:white;border-radius:var(--radius-xl);border:1px dashed var(--gray-300);">
+        <div style="font-size:4rem;margin-bottom:1.5rem;">📭</div>
+        <h2 style="color:var(--gray-700);margin-bottom:.8rem;">Hali buyurtma yo'q</h2>
+        <p style="color:var(--gray-500);margin-bottom:1.5rem;">Xarid qilishni boshlang!</p>
+        <a href="{% url 'main:index' %}" class="btn btn-primary">Xaridni boshlash</a>
+    </div>
+{% endif %}
+{% endblock %}

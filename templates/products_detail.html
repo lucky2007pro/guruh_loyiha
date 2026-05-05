@@ -1,6 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}{{ product.name }} - Onlayn Magazin{% endblock %}
+{% block title %}{{ product.title }} - JobEasy Mall{% endblock %}
+
+{% block extra_css %}
+<style>
+.gallery-main{width:100%;height:420px;background:var(--gray-100);border-radius:var(--radius-lg);overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;}
+.gallery-main img{width:100%;height:100%;object-fit:contain;}
+.gallery-thumbs{display:flex;gap:.6rem;flex-wrap:wrap;}
+.gallery-thumb{width:70px;height:70px;border-radius:var(--radius-md);overflow:hidden;cursor:pointer;border:2px solid var(--gray-200);transition:border-color .2s;}
+.gallery-thumb:hover,.gallery-thumb.active{border-color:var(--primary);}
+.gallery-thumb img{width:100%;height:100%;object-fit:cover;}
+.star-rating{display:flex;gap:.2rem;cursor:pointer;}
+.star-rating input{display:none;}
+.star-rating label{font-size:1.6rem;color:var(--gray-300);cursor:pointer;transition:color .15s;}
+.star-rating label:hover,.star-rating label:hover~label{color:var(--gray-300) !important;}
+.star-rating input:checked~label{color:var(--gray-300);}
+.star-rating label:hover,.star-rating input:checked+label,.star-rating input:checked+label~label:not(:checked){color:#FBBF24;}
+.comment-card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.2rem;margin-bottom:1rem;}
+.comment-author{display:flex;align-items:center;gap:.7rem;margin-bottom:.7rem;}
+.comment-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#8B5CF6);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;}
+.comment-meta{font-weight:700;color:var(--gray-900);font-size:.9rem;}
+.comment-date{font-size:.8rem;color:var(--gray-400);}
+.comment-body{color:var(--gray-700);line-height:1.6;font-size:.95rem;}
+.comment-form textarea{width:100%;padding:.8rem 1rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:.95rem;resize:vertical;min-height:90px;font-family:inherit;}
+.comment-form textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.1);}
+</style>
+{% endblock %}
 
 {% block content %}
     <!-- BREADCRUMB -->
@@ -14,115 +39,227 @@
     <!-- PRODUCT DETAIL -->
     <div class="product-detail">
         <div class="detail-container">
-            
-            <!-- LEFT: IMAGE -->
+            <!-- LEFT: IMAGE GALLERY -->
             <div>
-                <div class="detail-image">
-                    {% if product.productimage_set.first %}
-                        <img src="{{ product.productimage_set.first.image.url }}" alt="{{ product.title }}" id="mainImage">
+                <div class="gallery-main">
+                    {% if images %}
+                        <img src="{{ images.0.image.url }}" alt="{{ product.title }}" id="mainImg">
                     {% else %}
-                        <span style="color: var(--gray-300); font-size: 5rem;">📦</span>
+                        <span style="color:var(--gray-300);font-size:5rem;">📦</span>
                     {% endif %}
                 </div>
+                {% if images|length > 1 %}
+                <div class="gallery-thumbs">
+                    {% for img in images %}
+                    <div class="gallery-thumb {% if forloop.first %}active{% endif %}" onclick="switchImg('{{ img.image.url }}', this)">
+                        <img src="{{ img.image.url }}" alt="{{ product.title }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
 
             <!-- RIGHT: INFO -->
             <div class="detail-info">
                 <h1>{{ product.title }}</h1>
-                
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="color: #F59E0B; font-weight: 600; background: #FEF3C7; padding: 0.2rem 0.6rem; border-radius: var(--radius-md);">⭐ 4.8</div>
-                    <span style="color: var(--gray-500);">(12+ sharh)</span>
-                    <span style="color: var(--secondary); font-weight: 700; background: #D1FAE5; padding: 0.2rem 0.6rem; border-radius: var(--radius-md);">✓ Sotuvda mavjud</span>
+
+                <!-- RATING -->
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;flex-wrap:wrap;">
+                    {% with avg=product.average_rating count=product.ratings_count %}
+                    {% if avg %}
+                        <div style="color:#F59E0B;font-weight:700;background:#FEF3C7;padding:.25rem .7rem;border-radius:var(--radius-md);">⭐ {{ avg }}/5</div>
+                        <span style="color:var(--gray-500);font-size:.9rem;">({{ count }} ta reyting)</span>
+                    {% else %}
+                        <span style="color:var(--gray-400);font-size:.9rem;">Hali reyting yo'q</span>
+                    {% endif %}
+                    {% endwith %}
+                    <span style="color:var(--gray-400);font-size:.85rem;">👁 {{ product.view_count }} marta ko'rildi</span>
+                    <span style="color:var(--secondary);font-weight:700;background:#D1FAE5;padding:.25rem .7rem;border-radius:var(--radius-md);">✓ Sotuvda mavjud</span>
                 </div>
 
                 <div class="detail-price">{{ product.price }} so'm</div>
 
                 <div class="detail-description">
-                    <h3 style="color: var(--gray-900); margin-bottom: 1rem; font-size: 1.3rem;">Tavsif</h3>
+                    <h3 style="color:var(--gray-900);margin-bottom:.8rem;font-size:1.2rem;">Tavsif</h3>
                     <p>{{ product.description }}</p>
                 </div>
 
-                <!-- ACTIONS -->
-                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button class="btn btn-primary" style="flex: 2; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);" onclick="addToCart({{ product.id }})">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        Savatchaga qo'shish
-                    </button>
-                    <button class="btn btn-save" style="padding: 1rem 1.5rem; border-radius: var(--radius-lg);" onclick="toggleSaved(event, {{ product.id }})">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                    </button>
+                <!-- SELLER CONTACTS -->
+                <div style="background:var(--gray-50);border-radius:var(--radius-lg);padding:1rem;margin:1.2rem 0;border:1px solid var(--gray-200);">
+                    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:.9rem;color:var(--gray-700);">
+                        <span>📍 {{ product.address }}</span>
+                        <span>📞 {{ product.phone_number }}</span>
+                        {% if product.tg_username %}<a href="https://t.me/{{ product.tg_username }}" target="_blank" style="color:var(--primary);text-decoration:none;">✈ @{{ product.tg_username }}</a>{% endif %}
+                    </div>
                 </div>
 
+                <!-- ACTIONS -->
+                <div style="display:flex;gap:1rem;margin-bottom:1.2rem;">
+                    <button class="btn btn-primary" style="flex:2;padding:1rem;font-size:1rem;" id="cartBtn" onclick="addToCart({{ product.id }})">
+                        🛒 Savatchaga qo'shish
+                    </button>
+                    <a href="{% url 'users:addremovesaved' product.id %}" class="btn btn-save" style="padding:1rem 1.2rem;">❤</a>
+                </div>
+
+                <!-- RATING FORM -->
+                {% if user.is_authenticated %}
+                <div style="background:var(--gray-50);border-radius:var(--radius-lg);padding:1.2rem;border:1px solid var(--gray-200);">
+                    <h4 style="font-size:.95rem;color:var(--gray-700);margin-bottom:.8rem;">Reytingingizni qoldiring:</h4>
+                    <form method="POST" action="{% url 'products:rate_product' product.id %}" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                        {% csrf_token %}
+                        <div class="star-rating" id="starRating">
+                            {% for i in "54321" %}
+                            <input type="radio" name="score" id="star{{ i }}" value="{{ i }}" {% if user_rating and user_rating.score == i|add:0 %}checked{% endif %}>
+                            <label for="star{{ i }}" title="{{ i }} yulduz">★</label>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="padding:.5rem 1.2rem;font-size:.9rem;">Saqlash</button>
+                        {% if user_rating %}<span style="color:var(--gray-500);font-size:.85rem;">Sizning reytingiz: {{ user_rating.score }}/5</span>{% endif %}
+                    </form>
+                </div>
+                {% endif %}
+
                 <!-- DELIVERY INFO -->
-                <div style="background-color: var(--gray-50); padding: 1.5rem; border-radius: var(--radius-lg); margin-top: 2rem; border: 1px solid var(--gray-200);">
-                    <h3 style="margin-bottom: 1.2rem; font-size: 1.1rem; color: var(--gray-800); display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                        Yetkazib berish xizmati
-                    </h3>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; color: var(--gray-600);">
-                        <span>Yetkazib berish vaqti:</span>
-                        <span style="font-weight: 700; color: var(--gray-900);">2-3 kun</span>
+                <div style="background:var(--gray-50);padding:1.2rem;border-radius:var(--radius-lg);margin-top:1.2rem;border:1px solid var(--gray-200);">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:.6rem;color:var(--gray-600);font-size:.9rem;">
+                        <span>⏱ Yetkazish vaqti:</span><span style="font-weight:700;color:var(--gray-900);">2-3 kun</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; color: var(--gray-600);">
-                        <span>Yetkazib berish narxi:</span>
-                        <span style="font-weight: 700; color: var(--secondary);">Bepul (Aksiya)</span>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:.6rem;color:var(--gray-600);font-size:.9rem;">
+                        <span>🚚 Yetkazish narxi:</span><span style="font-weight:700;color:var(--secondary);">Bepul (Aksiya)</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; color: var(--gray-600);">
-                        <span>Qaytarish va almashish:</span>
-                        <span style="font-weight: 700; color: var(--gray-900);">30 kun ichida</span>
+                    <div style="display:flex;justify-content:space-between;color:var(--gray-600);font-size:.9rem;">
+                        <span>🔄 Qaytarish:</span><span style="font-weight:700;color:var(--gray-900);">30 kun ichida</span>
                     </div>
                 </div>
 
                 <!-- SELLER INFO -->
-                <div style="background-color: transparent; padding: 1.5rem 0; margin-top: 1rem; border-top: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary), #8B5CF6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">JEM</div>
+                <div style="padding:1.2rem 0;margin-top:.8rem;border-top:1px solid var(--gray-200);display:flex;align-items:center;gap:1rem;">
+                    <a href="{% url 'users:profile' product.author.username %}" style="display:flex;align-items:center;gap:1rem;text-decoration:none;">
+                        {% if product.author.avatar %}
+                        <img src="{{ product.author.avatar.url }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">
+                        {% else %}
+                        <div style="width:48px;height:48px;background:linear-gradient(135deg,var(--primary),#8B5CF6);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">{{ product.author.username|slice:":2"|upper }}</div>
+                        {% endif %}
                         <div>
-                            <div style="font-weight: 700; color: var(--gray-900);">JobEasy Mall</div>
-                            <div style="font-size: 0.9rem; color: var(--primary); font-weight: 600;">Tasdiqlangan sotuvchi</div>
+                            <div style="font-weight:700;color:var(--gray-900);">{{ product.author.get_full_name|default:product.author.username }}</div>
+                            <div style="font-size:.85rem;color:var(--primary);">Sotuvchi profili →</div>
                         </div>
+                    </a>
+                    {% if request.user == product.author %}
+                    <div style="margin-left:auto;display:flex;gap:.5rem;">
+                        <a href="{% url 'products:update' product.id %}" class="btn btn-primary" style="padding:.5rem 1rem;font-size:.85rem;">✏ Tahrirlash</a>
+                        <a href="{% url 'products:delete' product.id %}" style="padding:.5rem 1rem;font-size:.85rem;background:#FEE2E2;color:var(--danger);border-radius:var(--radius-md);text-decoration:none;font-weight:600;">🗑 O'chirish</a>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        function addToCart(productId) {
-            fetch(`/products/cart/add/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ product_id: productId, quantity: 1 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Savatchaga qo\'shildi!');
-            })
-            .catch(error => console.error('Error:', error));
-        }
+    <!-- COMMENTS SECTION -->
+    <div style="margin-top:3rem;">
+        <h2 style="font-size:1.5rem;font-weight:800;color:var(--gray-900);margin-bottom:1.5rem;">
+            💬 Kommentariyalar ({{ comments.count }})
+        </h2>
 
-        function toggleSaved(event, productId) {
-            event.preventDefault();
-            window.location.href = "/users/addremovesaved/" + productId;
-        }
+        {% if user.is_authenticated %}
+        <div style="background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem;">
+            <h4 style="margin-bottom:1rem;font-size:1rem;color:var(--gray-700);">Kommentariya qoldiring</h4>
+            <form method="POST" action="{% url 'products:new_comment' product.id %}" class="comment-form">
+                {% csrf_token %}
+                <textarea name="body" placeholder="Fikringizni yozing..." required></textarea>
+                <button type="submit" class="btn btn-primary" style="margin-top:.8rem;">Yuborish</button>
+            </form>
+        </div>
+        {% else %}
+        <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.2rem;margin-bottom:1.5rem;text-align:center;color:var(--gray-600);">
+            Kommentariya qoldirish uchun <a href="{% url 'login' %}" style="color:var(--primary);font-weight:700;">tizimga kiring</a>
+        </div>
+        {% endif %}
 
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
+        {% if comments %}
+            {% for comment in comments %}
+            <div class="comment-card">
+                <div class="comment-author">
+                    {% if comment.author.avatar %}
+                        <img src="{{ comment.author.avatar.url }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                    {% else %}
+                        <div class="comment-avatar">{{ comment.author.username|slice:":2"|upper }}</div>
+                    {% endif %}
+                    <div>
+                        <div class="comment-meta">{{ comment.author.get_full_name|default:comment.author.username }}</div>
+                        <div class="comment-date">{{ comment.date|date:"d M Y, H:i" }}</div>
+                    </div>
+                    {% if request.user == comment.author %}
+                    <form method="POST" action="{% url 'products:delete_comment' comment.id %}" style="margin-left:auto;">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:.85rem;" title="O'chirish">🗑</button>
+                    </form>
+                    {% endif %}
+                </div>
+                <div class="comment-body">{{ comment.body }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align:center;padding:2.5rem;background:var(--gray-50);border-radius:var(--radius-lg);color:var(--gray-500);">
+                Hali kommentariya yo'q. Birinchi bo'ling!
+            </div>
+        {% endif %}
+    </div>
+
+{% block extra_js %}
+<script>
+function switchImg(url, el) {
+    document.getElementById('mainImg').src = url;
+    document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+}
+
+function addToCart(productId) {
+    const btn = document.getElementById('cartBtn');
+    btn.disabled = true;
+    btn.textContent = 'Qo\'shilmoqda...';
+    fetch('/products/cart/add/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json'},
+        body: JSON.stringify({product_id: productId, quantity: 1})
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.textContent = '✓ Savatchaga qo\'shildi!';
+        btn.style.background = 'var(--secondary)';
+        setTimeout(() => { btn.textContent = '🛒 Savatchaga qo\'shish'; btn.style.background = ''; btn.disabled = false; }, 2500);
+    })
+    .catch(() => { btn.textContent = '🛒 Savatchaga qo\'shish'; btn.disabled = false; });
+}
+
+function getCookie(name) {
+    let v = null;
+    if (document.cookie) {
+        document.cookie.split(';').forEach(c => {
+            c = c.trim();
+            if (c.startsWith(name + '=')) v = decodeURIComponent(c.substring(name.length + 1));
+        });
+    }
+    return v;
+}
+
+// Star rating hover effect
+const stars = document.querySelectorAll('#starRating label');
+stars.forEach((star, i) => {
+    star.addEventListener('mouseover', () => {
+        stars.forEach((s, j) => s.style.color = j >= stars.length - 1 - i ? '#FBBF24' : 'var(--gray-300)');
+    });
+    star.addEventListener('mouseout', () => {
+        const checked = document.querySelector('#starRating input:checked');
+        if (checked) {
+            const val = parseInt(checked.value);
+            stars.forEach((s, j) => s.style.color = j >= stars.length - val ? '#FBBF24' : 'var(--gray-300)');
+        } else {
+            stars.forEach(s => s.style.color = 'var(--gray-300)');
         }
-    </script>
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}

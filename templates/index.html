@@ -157,9 +157,9 @@
     <div class="categories-area">
         <h2 class="section-title">Ommabop Kategoriyalar</h2>
         <ul class="categories-list" style="margin-top: 1rem;">
-            <li><a href="{% url 'main:index' %}?category=all" class="category-pill">Barcha mahsulotlar</a></li>
+            <li><a href="{% url 'main:index' %}" class="category-pill {% if not selected_category or selected_category == 'all' %}active{% endif %}">Barcha mahsulotlar</a></li>
             {% for category in categories %}
-                <li><a href="{% url 'main:index' %}?category={{ category.id }}" class="category-pill">{{ category.name }}</a></li>
+                <li><a href="{% url 'main:index' %}?category={{ category.id }}" class="category-pill {% if selected_category == category.id|stringformat:'s' %}active{% endif %}">{{ category.name }}</a></li>
             {% endfor %}
         </ul>
     </div>
@@ -199,6 +199,20 @@
             <div class="empty-icon">🛒</div>
             <p class="empty-text">Hozirda tanlangan turkuma ko'ra mahsulot topilmadi</p>
         </div>
+    {% endif %}
+
+    {% if is_paginated %}
+    <div style="display:flex;justify-content:center;gap:.5rem;margin-top:2rem;flex-wrap:wrap;">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&category={{ selected_category }}&q={{ request.GET.q }}" class="btn btn-primary" style="padding:.5rem 1rem;">«</a>
+            <a href="?page={{ page_obj.previous_page_number }}&category={{ selected_category }}&q={{ request.GET.q }}" class="btn btn-primary" style="padding:.5rem 1rem;">‹ Oldingi</a>
+        {% endif %}
+        <span style="padding:.5rem 1rem;background:white;border-radius:var(--radius-md);border:1px solid var(--gray-200);font-weight:600;">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&category={{ selected_category }}&q={{ request.GET.q }}" class="btn btn-primary" style="padding:.5rem 1rem;">Keyingi ›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&category={{ selected_category }}&q={{ request.GET.q }}" class="btn btn-primary" style="padding:.5rem 1rem;">»</a>
+        {% endif %}
+    </div>
     {% endif %}
 
 {% endblock %}

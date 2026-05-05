@@ -196,6 +196,44 @@
             transform: translateY(-2px);
         }
 
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .btn-logout {
+            padding: 0.5rem 1.2rem;
+            background: transparent;
+            border: 1.5px solid var(--danger);
+            color: var(--danger);
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+        }
+
         /* ------------------- CONTAINER ------------------- */
         .container {
             max-width: 1280px;
@@ -480,6 +518,100 @@
             font-size: 1.05rem;
         }
 
+        /* ------------------- CRISPY FORMS (BOOTSTRAP 5 SHIM) ------------------- */
+        .mb-3 {
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            font-size: 0.95rem;
+        }
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--gray-900);
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-control:focus {
+            color: var(--gray-900);
+            background-color: #fff;
+            border-color: var(--primary);
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.25);
+        }
+        .form-text {
+            margin-top: 0.5rem;
+            font-size: 0.85em;
+            color: var(--gray-500);
+        }
+        .text-danger {
+            color: var(--danger) !important;
+        }
+        .is-invalid {
+            border-color: var(--danger);
+        }
+        .is-invalid:focus {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.25);
+        }
+        .invalid-feedback {
+            display: none;
+            width: 100%;
+            margin-top: 0.5rem;
+            font-size: 0.875em;
+            color: var(--danger);
+            font-weight: 500;
+        }
+        .is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+        ul.errorlist {
+            list-style: none;
+            padding: 0;
+            margin-top: 0.5rem;
+            color: var(--danger);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        ul.errorlist li {
+            margin-bottom: 0.25rem;
+        }
+        .form-check {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .form-check-input {
+            width: 1.25em;
+            height: 1.25em;
+            margin-top: 0;
+            margin-right: 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.25em;
+            cursor: pointer;
+        }
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .form-check-label {
+            margin-bottom: 0;
+            font-size: 0.95rem;
+            color: var(--gray-800);
+            cursor: pointer;
+        }
+
         /* ------------------- RESPONSIVE ------------------- */
         @media (max-width: 992px) {
             .navbar-container {
@@ -518,12 +650,18 @@
 
             <div class="nav-menu">
                 <a href="{% url 'main:index' %}">Bosh sahifa</a>
-                <a href="{% url 'main:index' %}">Katalog</a>
+                <a href="{% url 'products:index' %}">Katalog</a>
                 {% if user.is_authenticated %}
                     <a href="{% url 'users:wallet' %}">Hamyon</a>
+                    <a href="{% url 'users:orders' %}">Buyurtmalar</a>
                     <a href="{% url 'users:profile' user.username %}">Profil</a>
+                    <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-logout">Chiqish</button>
+                    </form>
                 {% else %}
                     <a href="{% url 'login' %}">Kirish</a>
+                    <a href="{% url 'users:signup' %}">Ro'yxatdan o'tish</a>
                 {% endif %}
             </div>
 
@@ -534,8 +672,9 @@
                 <a href="{% url 'users:recently_viewed' %}" class="nav-icon" title="Ko'rilganlar">
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                 </a>
-                <a href="{% url 'products:cart_detail' %}" class="nav-icon" title="Savat">
+                <a href="{% url 'products:cart_detail' %}" class="nav-icon" title="Savat" style="position:relative;">
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    {% if cart_count > 0 %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
                 </a>
                 {% if user.is_authenticated %}
                     <a href="{% url 'users:profile' user.username %}" class="nav-icon" title="Mening Profilim">

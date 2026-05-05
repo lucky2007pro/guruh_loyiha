@@ -84,8 +84,8 @@
                     {% for product in products %}
                         <div class="product-card">
                             <div class="product-image">
-                                {% if product.image %}
-                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                {% if product.productimage_set.first %}
+                                    <img src="{{ product.productimage_set.first.image.url }}" alt="{{ product.title }}">
                                 {% else %}
                                     <span style="color: #bdc3c7; font-size: 3rem;">📦</span>
                                 {% endif %}
@@ -97,7 +97,7 @@
                             </div>
 
                             <div class="product-info">
-                                <a href="/product/{{ product.id }}/" class="product-name">{{ product.name }}</a>
+                                <a href="/product/{{ product.id }}/" class="product-name">{{ product.title }}</a>
                                 <div class="product-category">{{ product.category.name }}</div>
                                 <div class="product-price">{{ product.price }} so'm</div>
                                 <div class="product-rating">⭐ {{ product.rating|default:"4.5" }}/5 ({{ product.reviews_count|default:"0" }} sharh)</div>
@@ -139,39 +139,7 @@
     <script>
         function toggleSaved(event, productId) {
             event.preventDefault();
-            fetch(`/api/product/${productId}/save/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.saved) {
-                    event.target.classList.add('saved');
-                    event.target.textContent = '❤️ Saqlandi';
-                } else {
-                    event.target.classList.remove('saved');
-                    event.target.textContent = '❤️';
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
+            window.location.href = `/users/addremovesaved/${productId}`;
         }
     </script>
 

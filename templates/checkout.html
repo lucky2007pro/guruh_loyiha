@@ -180,12 +180,45 @@
                 <textarea name="shipping_address" class="form-control" rows="4" placeholder="Shahar, tuman, ko'cha, uy raqami va mo'ljalni kiriting..." required></textarea>
             </div>
             
+            <!-- TO'LOV USULI -->
             <div class="form-group">
-                <label>Qo'shimcha izoh (ixtiyoriy)</label>
-                <textarea name="notes" class="form-control" rows="2" placeholder="Kuryer uchun maxsus ko'rsatmalar..."></textarea>
+                <label>To'lov usuli *</label>
+                <div style="display:flex;flex-direction:column;gap:.8rem;margin-top:.5rem;">
+                    <label style="display:flex;align-items:center;gap:.8rem;padding:1rem;border:2px solid var(--gray-200);border-radius:var(--radius-md);cursor:pointer;transition:border-color .2s;" id="label-cash">
+                        <input type="radio" name="payment_method" value="cash" checked
+                            style="accent-color:var(--primary);width:18px;height:18px;"
+                            onchange="togglePaymentUI(this.value)">
+                        <div>
+                            <div style="font-weight:700;color:var(--gray-900);">💵 Naqd pul</div>
+                            <div style="font-size:.85rem;color:var(--gray-500);">Kuryer kelganda to'laysiz</div>
+                        </div>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:.8rem;padding:1rem;border:2px solid var(--gray-200);border-radius:var(--radius-md);cursor:pointer;transition:border-color .2s;" id="label-wallet">
+                        <input type="radio" name="payment_method" value="wallet"
+                            style="accent-color:var(--primary);width:18px;height:18px;"
+                            onchange="togglePaymentUI(this.value)">
+                        <div>
+                            <div style="font-weight:700;color:var(--gray-900);">💳 Hamyon orqali</div>
+                            <div style="font-size:.85rem;color:var(--gray-500);">
+                                Joriy balans: <strong style="color:{% if wallet.balance >= total_price %}var(--secondary){% else %}var(--danger){% endif %};">
+                                    {{ wallet.balance }} so'm
+                                </strong>
+                                {% if wallet.balance < total_price %}
+                                    — <span style="color:var(--danger);">Yetarli emas!</span>
+                                    <a href="{% url 'users:wallet' %}" style="color:var(--primary);font-weight:600;margin-left:.3rem;">Hamyonni to'ldirish →</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </label>
+                </div>
             </div>
-            
-            <button type="submit" class="submit-btn">Buyurtmani tasdiqlash va yuborish</button>
+
+            <div id="wallet-warning" style="display:none;background:#FEF3C7;border:1px solid #FCD34D;border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;color:#92400E;font-size:.9rem;">
+                ⚠️ Hamyon orqali to'lash uchun balansingiz yetarli emas.
+                <a href="{% url 'users:wallet' %}" style="color:var(--primary);font-weight:700;">Hamyonni to'ldirish</a>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">✅ Buyurtmani tasdiqlash</button>
         </form>
     </div>
     
@@ -212,4 +245,45 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+const walletBalance = parseFloat("{{ wallet.balance|default:'0' }}");
+const totalPrice = parseFloat("{{ total_price|default:'0' }}");
+
+function togglePaymentUI(val) {
+    const cashLabel = document.getElementById('label-cash');
+    const walletLabel = document.getElementById('label-wallet');
+    const warning = document.getElementById('wallet-warning');
+    const btn = document.getElementById('submitBtn');
+
+    if (val === 'wallet') {
+        walletLabel.style.borderColor = 'var(--primary)';
+        cashLabel.style.borderColor = 'var(--gray-200)';
+        if (walletBalance < totalPrice) {
+            warning.style.display = 'block';
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        } else {
+            warning.style.display = 'none';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        }
+    } else {
+        cashLabel.style.borderColor = 'var(--primary)';
+        walletLabel.style.borderColor = 'var(--gray-200)';
+        warning.style.display = 'none';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('label-cash').style.borderColor = 'var(--primary)';
+});
+</script>
+{% endblock %}
 {% endblock %}
